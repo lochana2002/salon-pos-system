@@ -1,0 +1,20 @@
+@'
+# Angular dependencies and generated files
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# ASP.NET Core generated files
+backend/**/bin/
+backend/**/obj/
+
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+
+# IDE files
+.vscode/
+.vs/
+'@ | Set-Content -Path .gitignore
