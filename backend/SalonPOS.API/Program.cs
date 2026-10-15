@@ -1,12 +1,22 @@
+
+using Microsoft.EntityFrameworkCore;
+using SalonPOS.API.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Connect the API to SQL Server
+var connectionString = builder.Configuration
+    .GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<SalonDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// Register OpenAPI
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure OpenAPI
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -14,28 +24,31 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Home endpoint
+app.MapGet("/", () => "Salon POS API is running!");
 
-app.MapGet("/weatherforecast", () =>
+// Test database connection
+app.MapGet("/api/test-db", async (SalonDbContext db) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    try
+    {
+        bool connected = await db.Database.CanConnectAsync();
+
+        return Results.Ok(new
+        {
+            success = connected,
+            message = connected
+                ? "Database connection successful!"
+                : "Could not connect to the database."
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: 500
+        );
+    }
+});
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
