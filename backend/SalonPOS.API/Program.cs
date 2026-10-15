@@ -14,6 +14,7 @@ builder.Services.AddDbContext<SalonDbContext>(options =>
 // Register OpenAPI
 builder.Services.AddOpenApi();
 
+builder.Services.AddControllers();
 var app = builder.Build();
 
 // Configure OpenAPI
@@ -51,4 +52,5 @@ app.MapGet("/api/test-db", async (SalonDbContext db) =>
     }
 });
 
+app.MapControllers();
 app.Run();
