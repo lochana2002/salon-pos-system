@@ -1,0 +1,322 @@
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.page {
+  min-height: 100vh;
+  background: #f7f4ef;
+  color: #352a24;
+  font-family: Arial, sans-serif;
+}
+
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid #e9e0d5;
+  padding: 18px 6%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #73513d;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.brand h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.brand p,
+.panel-heading p {
+  color: #8b7c70;
+  font-size: 13px;
+  margin: 5px 0 0;
+}
+
+.status {
+  color: #73513d;
+  background: #f1e8df;
+  border-radius: 20px;
+  padding: 9px 14px;
+  font-size: 13px;
+}
+
+.content {
+  max-width: 1150px;
+  width: 92%;
+  margin: 36px auto;
+}
+
+.welcome {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: #997457;
+  letter-spacing: 2px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.welcome h2 {
+  font-size: 30px;
+  margin: 8px 0;
+}
+
+.welcome > p:last-child {
+  color: #827469;
+  margin-top: 8px;
+}
+
+.summary {
+  background: white;
+  border: 1px solid #eee4da;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  max-width: 300px;
+}
+
+.summary-icon {
+  width: 48px;
+  height: 48px;
+  background: #f3e9df;
+  color: #73513d;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 25px;
+}
+
+.summary p {
+  color: #827469;
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.summary h3 {
+  font-size: 25px;
+  margin: 0;
+}
+
+.panel {
+  background: white;
+  border: 1px solid #eee4da;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.panel-heading h3 {
+  font-size: 19px;
+  margin: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.field input {
+  width: 100%;
+  border: 1px solid #ded4c9;
+  border-radius: 8px;
+  padding: 12px;
+  font: inherit;
+  font-size: 14px;
+  background: #fff;
+}
+
+.field input:focus {
+  outline: 2px solid #b99a7e;
+  border-color: #8b684f;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+button {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-weight: bold;
+}
+
+.primary-button {
+  background: #73513d;
+  color: white;
+  border: 1px solid #73513d;
+}
+
+.primary-button:hover {
+  background: #5d4030;
+}
+
+.primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: white;
+  color: #5d4637;
+  border: 1px solid #ded4c9;
+}
+
+.message {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.error {
+  background: #fff0ee;
+  color: #a12c24;
+}
+
+.success {
+  background: #edf8ef;
+  color: #236b36;
+}
+
+.empty-state {
+  text-align: center;
+  color: #827469;
+  padding: 28px 10px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th,
+td {
+  border-bottom: 1px solid #eee7df;
+  padding: 15px 12px;
+  font-size: 14px;
+}
+
+th {
+  color: #827469;
+  background: #faf8f5;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.customer-name {
+  font-weight: bold;
+}
+
+footer {
+  text-align: center;
+  color: #958579;
+  padding: 24px;
+  font-size: 12px;
+}
+
+@media (max-width: 650px) {
+  .topbar {
+    padding: 16px 4%;
+    align-items: flex-start;
+  }
+
+  .status {
+    font-size: 11px;
+  }
+
+  .content {
+    width: 94%;
+    margin-top: 24px;
+  }
+
+  .welcome h2 {
+    font-size: 25px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  th,
+  td {
+    padding: 12px 10px;
+    white-space: nowrap;
+  }
+}
+.delete-button {
+  background: #a83232;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 12px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: #842626;
+}
+
+.actions {
+  white-space: nowrap;
+}

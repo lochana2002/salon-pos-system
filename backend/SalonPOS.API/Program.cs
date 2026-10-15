@@ -15,6 +15,17 @@ builder.Services.AddDbContext<SalonDbContext>(options =>
 builder.Services.AddOpenApi();
 
 builder.Services.AddControllers();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure OpenAPI
@@ -24,6 +35,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAngular");
 
 // Home endpoint
 app.MapGet("/", () => "Salon POS API is running!");
