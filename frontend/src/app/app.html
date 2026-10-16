@@ -1,192 +1,27 @@
 
-<div class="page">
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-icon">S</div>
-      <div>
-        <h1>Salon POS</h1>
-        <p>Salon Management System</p>
-      </div>
-    </div>
-    <span class="status">Customer Management</span>
-  </header>
+<div class="app-layout">
+  <nav class="main-nav">
+    <a class="brand" routerLink="/customers">Salon POS</a>
 
-  <main class="content">
-    <section class="welcome">
-      <p class="eyebrow">CLIENTS</p>
-      <h2>Customer Management</h2>
-      <p>Manage your salon customers in one place.</p>
-    </section>
-
-    <div class="summary">
-      <div class="summary-icon">♙</div>
-      <div>
-        <p>Total Customers</p>
-        <h3>{{ customers.length }}</h3>
-      </div>
-    </div>
-
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h3>{{ editingCustomerId !== null ? 'Edit Customer' : 'Add New Customer' }}</h3>
-<p>Enter the customer's contact information.</p>
-        </div>
-      </div>
-
-      <form (ngSubmit)="saveCustomer()" #customerForm="ngForm">
-        <div class="form-grid">
-          <div class="field">
-            <label for="fullName">Full Name *</label>
-            <input
-              id="fullName"
-              name="fullName"
-              type="text"
-              [(ngModel)]="form.fullName"
-              placeholder="Enter full name"
-              maxlength="100"
-              required
-            />
-          </div>
-
-          <div class="field">
-            <label for="phone">Phone Number *</label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              [(ngModel)]="form.phone"
-              placeholder="e.g. 0771234567"
-              maxlength="20"
-              required
-            />
-          </div>
-
-          <div class="field">
-            <label for="email">Email Address</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              [(ngModel)]="form.email"
-              placeholder="customer@example.com"
-              maxlength="100"
-              email
-            />
-          </div>
-
-          <div class="field">
-            <label for="address">Address</label>
-            <input
-              id="address"
-              name="address"
-              type="text"
-              [(ngModel)]="form.address"
-              placeholder="Enter address"
-              maxlength="250"
-            />
-          </div>
-        </div>
-
-        <p class="message error" *ngIf="errorMessage">
-          {{ errorMessage }}
-        </p>
-
-        <p class="message success" *ngIf="successMessage">
-          {{ successMessage }}
-        </p>
-
-        <div class="form-actions">
-          <button
-  type="button"
-  class="secondary-button"
-  (click)="clearForm()"
->
-  Clear
-</button>
-
-          <button
-  type="submit"
-  class="primary-button"
-  [disabled]="saving || customerForm.invalid"
->
-  {{
-    saving
-      ? 'Saving...'
-      : (editingCustomerId !== null ? 'Update Customer' : '+ Add Customer')
-  }}
-</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h3>Customer Directory</h3>
-          <p>Customers saved in your database.</p>
-        </div>
-
-        <button
-          class="secondary-button"
-          type="button"
-          (click)="loadCustomers()"
-        >
-          Refresh
-        </button>
-      </div>
-
-      <p *ngIf="loading" class="empty-state">Loading customers...</p>
-
-      <p *ngIf="!loading && !errorMessage && customers.length === 0"
-         class="empty-state">
-        No customers yet. Add your first customer above.
-      </p>
-
-      <div class="table-wrapper"
-           *ngIf="!loading && customers.length > 0">
-        <table>
-          <thead>
-  <tr>
-    <th>Customer</th>
-    <th>Phone</th>
-    <th>Email</th>
-    <th>Address</th>
-    <th>Actions</th>
-  </tr>
-</thead>
-
-          <tbody>
-  <tr *ngFor="let customer of customers">
-    <td class="customer-name">{{ customer.fullName }}</td>
-    <td>{{ customer.phone }}</td>
-    <td>{{ customer.email || '—' }}</td>
-    <td>{{ customer.address || '—' }}</td>
-    <td class="actions">
-      <button
-        type="button"
-        class="secondary-button"
-        (click)="editCustomer(customer)"
+    <div class="nav-links">
+      <a
+        routerLink="/customers"
+        routerLinkActive="selected"
+        [routerLinkActiveOptions]="{ exact: true }"
       >
-        Edit
-      </button>
+        Customers
+      </a>
 
-      <button
-        type="button"
-        class="delete-button"
-        (click)="deleteCustomer(customer)"
+      <a
+        routerLink="/employees"
+        routerLinkActive="selected"
       >
-        Delete
-      </button>
-    </td>
-  </tr>
-</tbody>
-        </table>
-      </div>
-    </section>
+        Employees
+      </a>
+    </div>
+  </nav>
+
+  <main class="page-content">
+    <router-outlet></router-outlet>
   </main>
-
-  <footer>
-    Salon POS · Customer Management
-  </footer>
 </div>

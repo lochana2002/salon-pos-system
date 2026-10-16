@@ -1,0 +1,211 @@
+<p>employees works!</p>
+
+<div class="employee-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">SALON MANAGEMENT</p>
+      <h1>Employee Management</h1>
+      <p class="subtitle">Manage your salon team and employee details.</p>
+    </div>
+    <div class="employee-count">
+      <span>Total Employees</span>
+      <strong>{{ employees.length }}</strong>
+    </div>
+  </header>
+
+  <div class="message error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="message success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+
+  <section class="panel">
+    <h2>{{ editingEmployeeId !== null ? 'Edit Employee' : 'Add New Employee' }}</h2>
+
+    <form (ngSubmit)="saveEmployee()" #employeeForm="ngForm">
+      <div class="form-grid">
+        <div class="field">
+          <label for="fullName">Full Name *</label>
+          <input
+            id="fullName"
+            name="fullName"
+            [(ngModel)]="form.fullName"
+            required
+            maxlength="100"
+            placeholder="Enter full name"
+          />
+        </div>
+
+        <div class="field">
+          <label for="phone">Phone *</label>
+          <input
+            id="phone"
+            name="phone"
+            [(ngModel)]="form.phone"
+            required
+            maxlength="20"
+            placeholder="Enter phone number"
+          />
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            [(ngModel)]="form.email"
+            email
+            maxlength="100"
+            placeholder="employee@example.com"
+          />
+        </div>
+
+        <div class="field">
+          <label for="jobTitle">Job Title *</label>
+          <select
+            id="jobTitle"
+            name="jobTitle"
+            [(ngModel)]="form.jobTitle"
+            required
+          >
+            <option value="">Select job title</option>
+            <option value="Hair Stylist">Hair Stylist</option>
+            <option value="Barber">Barber</option>
+            <option value="Beautician">Beautician</option>
+            <option value="Nail Technician">Nail Technician</option>
+            <option value="Receptionist">Receptionist</option>
+            <option value="Manager">Manager</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="salary">Monthly Salary (LKR) *</label>
+          <input
+            id="salary"
+            name="salary"
+            type="number"
+            [(ngModel)]="form.salary"
+            required
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <div class="field" *ngIf="editingEmployeeId !== null">
+          <label for="isActive">Employment Status</label>
+          <select
+            id="isActive"
+            name="isActive"
+            [(ngModel)]="form.isActive"
+          >
+            <option [ngValue]="true">Active</option>
+            <option [ngValue]="false">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="employeeForm.invalid || saving"
+        >
+          {{ saving ? 'Saving...' : (editingEmployeeId !== null ? 'Update Employee' : 'Add Employee') }}
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="clearForm()"
+        >
+          Clear
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="table-header">
+      <div>
+        <h2>Employee Directory</h2>
+        <p class="subtitle">Your salon team members</p>
+      </div>
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="loadEmployees()"
+        [disabled]="loading"
+      >
+        {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Contact</th>
+            <th>Job Title</th>
+            <th>Monthly Salary</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="6" class="empty-state">Loading employees...</td>
+          </tr>
+
+          <tr *ngIf="!loading && employees.length === 0">
+            <td colspan="6" class="empty-state">
+              No employees found. Add your first employee above.
+            </td>
+          </tr>
+
+          <tr *ngFor="let employee of employees">
+            <td>
+              <strong>{{ employee.fullName }}</strong>
+              <small *ngIf="employee.email">{{ employee.email }}</small>
+            </td>
+            <td>{{ employee.phone }}</td>
+            <td>{{ employee.jobTitle }}</td>
+            <td>{{ employee.salary | currency:'LKR ':'symbol':'1.2-2' }}</td>
+            <td>
+              <span
+                class="status"
+                [class.active]="employee.isActive"
+                [class.inactive]="!employee.isActive"
+              >
+                {{ employee.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button
+                  type="button"
+                  class="edit-button"
+                  (click)="editEmployee(employee)"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="delete-button"
+                  (click)="deleteEmployee(employee)"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
