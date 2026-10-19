@@ -1,15 +1,16 @@
 
 :host {
   display: block;
-  color: #2e2925;
+  color: #3d2b1f;
 }
 
 .employee-page {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 28px;
 }
 
+/* Page header */
 .page-header,
 .table-header {
   display: flex;
@@ -19,33 +20,31 @@
   margin-bottom: 24px;
 }
 
+.page-header h1 {
+  color: #4a3022;
+  font-size: 30px;
+  margin: 0 0 8px;
+}
+
 .eyebrow {
-  color: #9a704e;
+  color: #986b68;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   margin: 0 0 8px;
-}
-
-h1 {
-  font-size: 32px;
-  margin: 0 0 8px;
-}
-
-h2 {
-  font-size: 20px;
-  margin: 0 0 22px;
 }
 
 .subtitle {
-  color: #81766d;
+  color: #857467;
   margin: 0;
   font-size: 14px;
 }
 
+/* Employee count */
 .employee-count {
   min-width: 140px;
   padding: 18px;
+  border: 1px solid #eadfd5;
   border-radius: 12px;
   background: #f5eee7;
   text-align: center;
@@ -62,19 +61,40 @@ h2 {
 }
 
 .employee-count strong {
+  color: #4a3022;
   font-size: 28px;
   margin-top: 6px;
 }
 
+/* Panels */
 .panel {
-  background: white;
-  border: 1px solid #e9e1d9;
-  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #eadfd5;
+  border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgb(40 25 10 / 4%);
+  box-shadow: 0 4px 14px rgba(65, 43, 27, 0.05);
 }
 
+.panel h2 {
+  color: #986b68;
+  font-size: 21px;
+  margin: 0 0 22px;
+}
+
+.table-header h2 {
+  color: #986b68;
+  font-size: 21px;
+  margin: 0 0 7px;
+}
+
+.table-header p {
+  color: #857467;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Employee form */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -85,45 +105,45 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .field label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  color: #76513b;
 }
 
 .field input,
 .field select {
   width: 100%;
   box-sizing: border-box;
-  padding: 12px;
-  border: 1px solid #ddd3c9;
-  border-radius: 8px;
-  background: #fff;
-  color: #2e2925;
+  padding: 12px 14px;
+  border: 1px solid #ddcfc2;
+  border-radius: 7px;
+  background: #fffdfa;
+  color: #3d2b1f;
   font: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .field input:focus,
 .field select:focus {
-  outline: 2px solid #c7a17e;
-  outline-offset: 1px;
+  outline: none;
+  border-color: #986b68;
+  box-shadow: 0 0 0 3px rgba(152, 107, 104, 0.12);
 }
 
-.form-actions,
-.action-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
-}
-
+/* Buttons */
 button {
-  border: 0;
-  border-radius: 8px;
-  padding: 10px 15px;
-  cursor: pointer;
+  border: none;
+  border-radius: 7px;
+  padding: 11px 18px;
+  font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
 }
 
 button:disabled {
@@ -132,26 +152,61 @@ button:disabled {
 }
 
 .primary-button {
-  background: #795438;
-  color: white;
+  background: #76513b;
+  color: #fff;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: #593b2b;
 }
 
 .secondary-button {
-  background: #f2ede8;
-  color: #544438;
+  background: #eee5dc;
+  color: #543d2b;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #e2d3c5;
 }
 
 .edit-button {
-  background: #eee3d6;
-  color: #68472c;
+  background: #e8dfd3;
+  color: #543d2b;
+  padding: 8px 12px;
+}
+
+.edit-button:hover:not(:disabled) {
+  background: #d9c9b8;
 }
 
 .delete-button {
-  background: #fbe9e7;
-  color: #a12d25;
+  background: #f8e4e1;
+  color: #a3332a;
+  padding: 8px 12px;
 }
 
+.delete-button:hover:not(:disabled) {
+  background: #f1cfca;
+}
+
+.form-actions,
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.form-actions {
+  margin-top: 24px;
+}
+
+.action-buttons {
+  align-items: center;
+}
+
+/* Employee table */
 .table-wrapper {
+  width: 100%;
   overflow-x: auto;
 }
 
@@ -159,28 +214,43 @@ table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  font-size: 14px;
 }
 
-th,
-td {
-  padding: 14px 12px;
-  border-bottom: 1px solid #eee8e2;
-  font-size: 13px;
-  white-space: nowrap;
+thead {
+  background: #f5eee7;
 }
 
 th {
-  color: #796c61;
+  padding: 14px 12px;
+  color: #5b4030;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #eee5dd;
+  color: #594b41;
+  vertical-align: middle;
+}
+
+tbody tr:hover {
+  background: #fdfaf7;
+}
+
+td strong {
   font-weight: 600;
-  background: #faf8f6;
+  color: #4a3022;
 }
 
 td small {
   display: block;
-  color: #8b8178;
+  color: #857467;
   margin-top: 5px;
 }
 
+/* Active and inactive status */
 .status {
   display: inline-block;
   border-radius: 20px;
@@ -190,45 +260,70 @@ td small {
 }
 
 .status.active {
-  background: #e3f4e7;
-  color: #23743a;
+  background: #e8f5e9;
+  color: #276738;
 }
 
 .status.inactive {
-  background: #f2e7e5;
-  color: #93483f;
+  background: #f8e4e1;
+  color: #a3332a;
 }
 
-.empty-state {
-  padding: 30px;
-  text-align: center;
-  color: #81766d;
-}
-
+/* Messages */
 .message {
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 13px 16px;
+  border-radius: 7px;
   margin-bottom: 18px;
+  font-size: 14px;
 }
 
 .error {
-  color: #9d2929;
-  background: #fff0ef;
+  color: #a12622;
+  background: #fdecea;
+  border: 1px solid #f5c6c2;
 }
 
 .success {
-  color: #216b38;
-  background: #eaf7ed;
+  color: #276738;
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
 }
 
-@media (max-width: 650px) {
+/* Empty state */
+.empty-state {
+  padding: 30px 16px;
+  text-align: center;
+  color: #857467;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px;
+  color: #4a3022;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+/* Responsive layout */
+@media (max-width: 700px) {
   .employee-page {
-    padding: 20px 12px;
+    padding: 16px;
   }
 
-  .page-header {
+  .page-header,
+  .table-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .page-header h1 {
+    font-size: 25px;
+  }
+
+  .employee-count {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .form-grid {
@@ -239,7 +334,11 @@ td small {
     padding: 16px;
   }
 
-  h1 {
-    font-size: 26px;
+  .form-actions button {
+    flex: 1;
+  }
+
+  .action-buttons {
+    align-items: stretch;
   }
 }

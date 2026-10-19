@@ -1,56 +1,240 @@
-
-.app-layout {
-  min-height: 100vh;
-  background: #faf7f3;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-.main-nav {
+body {
+  background-color: #f5f2ed;
+  color: #333;
+}
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 210px;
+  background-color: #1a1617;
+  color: #c5b8b1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px;
+  flex-shrink: 0;
+}
+
+.brand-section {
+  text-align: center;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #2e282a;
+  margin-bottom: 20px;
+}
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #c59d7c;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  color: #c59d7c;
+}
+
+.brand-section h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e8ded8;
+  letter-spacing: 0.5px;
+}
+
+.brand-section span {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: #8c7a70;
+  display: block;
+  margin-top: 2px;
+}
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #a3958e;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.nav-item:hover {
+  background: #282224;
+  color: #fff;
+}
+
+.nav-item.active {
+  background: #986b68;
+  color: #ffffff;
+}
+
+.nav-item .icon {
+  font-size: 15px;
+}
+
+.user-profile-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 8px;
+  background: #231d1f;
+  border-radius: 8px;
+  margin-top: auto;
+}
+
+.user-profile-footer .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-profile-footer .user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.user-profile-footer .name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.user-profile-footer .role {
+  font-size: 10px;
+  color: #8c7a70;
+}
+
+.user-profile-footer .chevron {
+  font-size: 10px;
+  color: #8c7a70;
+}
+
+/* Main Content Wrapper */
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.top-header {
+  height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #eae5e1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 16px 28px;
-  background: #4a3022;
-  color: white;
+  padding: 0 24px;
 }
 
-.brand {
-  color: white;
-  font-size: 23px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.nav-links {
+.global-search {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+  background: #f7f4f0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  width: 340px;
 }
 
-.nav-links a {
-  padding: 10px 16px;
-  border-radius: 7px;
-  color: white;
-  text-decoration: none;
+.global-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  width: 100%;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.date-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #555;
+}
+
+.datetime-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.datetime-text .date {
   font-weight: 600;
+  color: #333;
 }
 
-.nav-links a:hover,
-.nav-links a.selected {
-  background: #76513b;
+.datetime-text .time {
+  color: #777;
+}
+
+.notification-btn {
+  position: relative;
+  background: #f7f4f0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.notification-btn .badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #d9534f;
+  color: white;
+  font-size: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.header-avatar img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .page-content {
   padding: 20px;
-}
-
-@media (max-width: 600px) {
-  .main-nav {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 16px;
-  }
-
-  .page-content {
-    padding: 8px;
-  }
+  background-color: #f5f2ed;
+  flex: 1;
 }

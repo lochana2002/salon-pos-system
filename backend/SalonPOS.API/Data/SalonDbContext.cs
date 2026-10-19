@@ -14,5 +14,8 @@ namespace SalonPOS.API.Data
 
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<SalonService> SalonServices { get; set; }
+        public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<Product> Products { get; set; }
     }
 }

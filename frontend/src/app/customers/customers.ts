@@ -30,6 +30,21 @@ export class Customers implements OnInit {
   saving = false;
   errorMessage = '';
   successMessage = '';
+  showForm = false;
+
+  startAddCustomer(): void {
+  this.clearForm();
+  this.errorMessage = '';
+  this.successMessage = '';
+  this.showForm = true;
+}
+
+cancelForm(): void {
+  this.clearForm();
+  this.errorMessage = '';
+  this.successMessage = '';
+  this.showForm = false;
+}
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -77,6 +92,7 @@ export class Customers implements OnInit {
           next: () => {
             this.successMessage = 'Customer updated successfully.';
             this.clearForm();
+            this.showForm = false;
             this.saving = false;
             this.loadCustomers();
           },
@@ -115,6 +131,7 @@ export class Customers implements OnInit {
     this.editingCustomerId = customer.id ?? null;
     this.errorMessage = '';
     this.successMessage = '';
+    this.showForm = true;
   }
 
   // Delete a customer

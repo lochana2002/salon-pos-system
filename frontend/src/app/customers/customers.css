@@ -3,18 +3,19 @@
   display: block;
 }
 
-.customers-page {
+.customer-page {
   max-width: 1400px;
   margin: 0 auto;
   padding: 28px;
   color: #3d2b1f;
 }
 
+/* Page header */
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   margin-bottom: 28px;
 }
 
@@ -24,13 +25,41 @@
   color: #4a3022;
 }
 
-.page-header p,
-.table-header p {
+.eyebrow {
+  margin: 0 0 8px;
+  color: #986b68;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.subtitle {
   margin: 0;
   color: #857467;
   font-size: 14px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.customer-count {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #857467;
+  font-size: 13px;
+}
+
+.customer-count strong {
+  color: #4a3022;
+  font-size: 25px;
+}
+
+/* Buttons */
 button {
   border: none;
   border-radius: 7px;
@@ -38,7 +67,7 @@ button {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, opacity 0.2s ease;
 }
 
 button:disabled {
@@ -46,20 +75,67 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.refresh-btn,
-.primary-btn {
+.primary-button {
   background: #76513b;
-  color: white;
+  color: #fff;
 }
 
-.refresh-btn:hover,
-.primary-btn:hover {
+.primary-button:hover:not(:disabled) {
   background: #593b2b;
 }
 
-.form-card,
-.table-card {
-  background: #ffffff;
+.secondary-button {
+  background: #eee5dc;
+  color: #543d2b;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #e2d3c5;
+}
+
+.edit-button {
+  background: #e8dfd3;
+  color: #543d2b;
+  padding: 8px 12px;
+}
+
+.edit-button:hover {
+  background: #d9c9b8;
+}
+
+.delete-button {
+  background: #f8e4e1;
+  color: #a3332a;
+  padding: 8px 12px;
+}
+
+.delete-button:hover {
+  background: #f1cfca;
+}
+
+/* Success and error messages */
+.message {
+  padding: 13px 16px;
+  border-radius: 7px;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+
+.message.success {
+  background: #e8f5e9;
+  color: #276738;
+  border: 1px solid #c8e6c9;
+}
+
+.message.error {
+  background: #fdecea;
+  color: #a12622;
+  border: 1px solid #f5c6c2;
+}
+
+/* Form and directory panels */
+.panel {
+  background: #fff;
   border: 1px solid #eadfd5;
   border-radius: 12px;
   padding: 24px;
@@ -67,32 +143,47 @@ button:disabled {
   box-shadow: 0 4px 14px rgba(65, 43, 27, 0.05);
 }
 
-.form-card h2,
-.table-card h2 {
-  margin: 0 0 20px;
-  font-size: 21px;
-  color: #4a3022;
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
 }
 
+.table-header h2 {
+  margin: 0 0 7px;
+  font-size: 21px;
+  color: #986b68;
+}
+
+.table-header p {
+  margin: 0;
+  color: #857467;
+  font-size: 14px;
+}
+
+/* Customer form */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
-.form-group {
+.field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
-.form-group label {
+.field label {
   font-size: 14px;
   font-weight: 600;
-  color: #594638;
+  color: #76513b;
 }
 
-.form-group input {
+.field input {
   width: 100%;
   box-sizing: border-box;
   padding: 12px 14px;
@@ -102,11 +193,12 @@ button:disabled {
   font-size: 14px;
   background: #fffdfa;
   color: #3d2b1f;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.form-group input:focus {
-  border-color: #927057;
-  box-shadow: 0 0 0 3px rgba(146, 112, 87, 0.12);
+.field input:focus {
+  border-color: #986b68;
+  box-shadow: 0 0 0 3px rgba(152, 107, 104, 0.12);
 }
 
 .form-actions {
@@ -116,26 +208,7 @@ button:disabled {
   margin-top: 24px;
 }
 
-.secondary-btn {
-  background: #eee5dc;
-  color: #503b2b;
-}
-
-.secondary-btn:hover {
-  background: #e2d3c5;
-}
-
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.table-header h2 {
-  margin-bottom: 7px;
-}
-
+/* Customer table */
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -163,62 +236,25 @@ td {
   padding: 14px 12px;
   border-bottom: 1px solid #eee5dd;
   color: #594b41;
+  vertical-align: middle;
 }
 
 tbody tr:hover {
   background: #fdfaf7;
 }
 
-.customer-name {
+td strong {
   font-weight: 600;
   color: #4a3022;
 }
 
-.actions {
+.action-buttons {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.edit-btn {
-  background: #e8dfd3;
-  color: #543d2b;
-  padding: 8px 12px;
-}
-
-.edit-btn:hover {
-  background: #d9c9b8;
-}
-
-.delete-btn {
-  background: #f8e4e1;
-  color: #a3332a;
-  padding: 8px 12px;
-}
-
-.delete-btn:hover {
-  background: #f1cfca;
-}
-
-.message {
-  padding: 13px 16px;
-  border-radius: 7px;
-  margin-bottom: 18px;
-  font-size: 14px;
-}
-
-.success {
-  background: #e8f5e9;
-  color: #276738;
-  border: 1px solid #c8e6c9;
-}
-
-.error {
-  background: #fdecea;
-  color: #a12622;
-  border: 1px solid #f5c6c2;
-}
-
-.loading,
+/* Loading and empty states */
 .empty-state {
   padding: 30px 16px;
   text-align: center;
@@ -234,8 +270,9 @@ tbody tr:hover {
   margin: 0;
 }
 
+/* Responsive layout */
 @media (max-width: 700px) {
-  .customers-page {
+  .customer-page {
     padding: 16px;
   }
 
@@ -248,8 +285,12 @@ tbody tr:hover {
     font-size: 25px;
   }
 
-  .form-card,
-  .table-card {
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .panel {
     padding: 16px;
   }
 
@@ -261,7 +302,19 @@ tbody tr:hover {
     flex: 1;
   }
 
-  .actions {
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .table-header {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 400px) {
+  .header-actions {
+    align-items: flex-start;
     flex-direction: column;
   }
 }

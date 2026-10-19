@@ -1,84 +1,108 @@
-<p>customers works!</p>
 
-<div class="customers-page">
+<div class="customer-page">
 
-  <div class="page-header">
+  <!-- Page Header -->
+  <header class="page-header">
     <div>
-      <h1>Customer Management</h1>
-      <p>Manage your salon customers and their contact details.</p>
+      <p class="eyebrow">SALON MANAGEMENT</p>
+      <h1>Customer Directory</h1>
+      <p class="subtitle">
+        Manage customer details and contact information.
+      </p>
     </div>
 
-    <button
-      type="button"
-      class="refresh-btn"
-      (click)="loadCustomers()"
-      [disabled]="loading">
-      {{ loading ? 'Loading...' : 'Refresh List' }}
-    </button>
-  </div>
+    <div class="header-actions">
+      <div class="customer-count">
+        <span>Total Customers</span>
+        <strong>{{ customers.length }}</strong>
+      </div>
 
-  <!-- Success message -->
-  <div class="message success" *ngIf="successMessage">
-    {{ successMessage }}
-  </div>
+      <button
+        *ngIf="!showForm"
+        type="button"
+        class="primary-button"
+        (click)="startAddCustomer()"
+      >
+        + Add Customer
+      </button>
+    </div>
+  </header>
 
-  <!-- Error message -->
+  <!-- Messages -->
   <div class="message error" *ngIf="errorMessage">
     {{ errorMessage }}
   </div>
 
-  <!-- Customer Form -->
-  <section class="form-card">
-    <h2>
-      {{ editingCustomerId !== null ? 'Edit Customer' : 'Add New Customer' }}
-    </h2>
+  <div class="message success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+
+  <!-- Add / Edit Customer Form -->
+  <section class="panel" *ngIf="showForm">
+
+    <div class="table-header">
+      <div>
+        <h2>
+          {{ editingCustomerId !== null
+            ? 'Edit Customer'
+            : 'Add New Customer' }}
+        </h2>
+        <p class="subtitle">
+          Enter the customer's information below.
+        </p>
+      </div>
+    </div>
 
     <form (ngSubmit)="saveCustomer()" #customerForm="ngForm">
-
       <div class="form-grid">
 
-        <div class="form-group">
+        <div class="field">
           <label for="fullName">Full Name *</label>
           <input
             id="fullName"
-            type="text"
             name="fullName"
             [(ngModel)]="form.fullName"
-            placeholder="Enter customer name"
             required
-            maxlength="100">
+            maxlength="100"
+            placeholder="Enter customer name"
+          />
         </div>
 
-        <div class="form-group">
+        <div class="field">
           <label for="phone">Phone Number *</label>
           <input
             id="phone"
-            type="tel"
             name="phone"
+            type="tel"
             [(ngModel)]="form.phone"
-            placeholder="Enter phone number"
             required
-            maxlength="20">
+            maxlength="20"
+            placeholder="Enter phone number"
+          />
         </div>
 
-        <div class="form-group">
-          <label for="email">Email Address</label>
+        <div class="field">
+          <label for="email">Email</label>
           <input
             id="email"
-            type="email"
             name="email"
+            type="email"
             [(ngModel)]="form.email"
-            placeholder="Enter email address">
+            email
+            maxlength="100"
+            placeholder="customer@example.com"
+          />
         </div>
 
-        <div class="form-group">
+        <div class="field">
           <label for="address">Address</label>
           <input
             id="address"
-            type="text"
             name="address"
             [(ngModel)]="form.address"
-            placeholder="Enter customer address">
+            maxlength="250"
+            placeholder="Enter customer address"
+          />
         </div>
 
       </div>
@@ -86,56 +110,74 @@
       <div class="form-actions">
         <button
           type="submit"
-          class="primary-btn"
-          [disabled]="saving || customerForm.invalid">
+          class="primary-button"
+          [disabled]="customerForm.invalid || saving"
+        >
           {{
             saving
               ? 'Saving...'
-              : editingCustomerId !== null
-                ? 'Update Customer'
-                : 'Add Customer'
+              : (editingCustomerId !== null
+                  ? 'Update Customer'
+                  : 'Save Customer')
           }}
         </button>
 
         <button
           type="button"
-          class="secondary-btn"
-          (click)="clearForm()">
-          Clear Form
+          class="secondary-button"
+          (click)="cancelForm()"
+          [disabled]="saving"
+        >
+          Cancel
         </button>
       </div>
-
     </form>
   </section>
 
   <!-- Customer Directory -->
-  <section class="table-card">
+  <section class="panel" *ngIf="!showForm">
 
     <div class="table-header">
       <div>
-        <h2>Customer Directory</h2>
-        <p>Registered customers: {{ customers.length }}</p>
+        <h2>All Customers</h2>
+        <p class="subtitle">
+          Your salon customer directory
+        </p>
       </div>
+
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="loadCustomers()"
+        [disabled]="loading"
+      >
+        {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
     </div>
 
-    <div *ngIf="loading" class="loading">
+    <!-- Loading -->
+    <p *ngIf="loading" class="empty-state">
       Loading customers...
-    </div>
+    </p>
 
-    <div class="empty-state"
-         *ngIf="!loading && customers.length === 0">
+    <!-- Empty State -->
+    <div
+      *ngIf="!loading && customers.length === 0"
+      class="empty-state"
+    >
       <h3>No customers found</h3>
-      <p>Add your first customer using the form above.</p>
+      <p>Click Add Customer to register your first customer.</p>
     </div>
 
-    <div class="table-wrapper"
-         *ngIf="!loading && customers.length > 0">
-
+    <!-- Customer Table -->
+    <div
+      class="table-wrapper"
+      *ngIf="!loading && customers.length > 0"
+    >
       <table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Customer Name</th>
+            <th>Customer</th>
             <th>Phone</th>
             <th>Email</th>
             <th>Address</th>
@@ -145,32 +187,37 @@
 
         <tbody>
           <tr *ngFor="let customer of customers">
-            <td>{{ customer.id }}</td>
-            <td class="customer-name">{{ customer.fullName }}</td>
+            <td>
+              <strong>{{ customer.fullName }}</strong>
+            </td>
+
             <td>{{ customer.phone }}</td>
-            <td>{{ customer.email || '-' }}</td>
-            <td>{{ customer.address || '-' }}</td>
+            <td>{{ customer.email || '—' }}</td>
+            <td>{{ customer.address || '—' }}</td>
 
-            <td class="actions">
-              <button
-                type="button"
-                class="edit-btn"
-                (click)="editCustomer(customer)">
-                Edit
-              </button>
+            <td>
+              <div class="action-buttons">
+                <button
+                  type="button"
+                  class="edit-button"
+                  (click)="editCustomer(customer)"
+                >
+                  Edit
+                </button>
 
-              <button
-                type="button"
-                class="delete-btn"
-                (click)="deleteCustomer(customer.id)">
-                Delete
-              </button>
+                <button
+                  type="button"
+                  class="delete-button"
+                  (click)="deleteCustomer(customer.id)"
+                >
+                  Delete
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
-
     </div>
-  </section>
 
+  </section>
 </div>

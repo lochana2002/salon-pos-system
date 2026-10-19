@@ -1,0 +1,193 @@
+
+<div class="services-page">
+  <div class="page-header">
+  <div>
+    <h1>Salon Services</h1>
+    <p>Manage your salon treatments, prices, and durations.</p>
+  </div>
+
+  <button
+    *ngIf="!showForm"
+    type="button"
+    class="btn-primary"
+    (click)="startAddService()"
+  >
+    + Add Service
+  </button>
+</div>
+<section class="service-form" *ngIf="showForm">
+    <h2>{{ editingId !== null ? 'Edit Service' : 'Add New Service' }}</h2>
+
+    <form (ngSubmit)="saveService()" #serviceForm="ngForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="name">Service Name *</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            [(ngModel)]="service.name"
+            placeholder="e.g. Haircut"
+            maxlength="100"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="category">Category *</label>
+          <select
+            id="category"
+            name="category"
+            [(ngModel)]="service.category"
+            required
+          >
+            <option value="">Select a category</option>
+            <option value="Hair">Hair</option>
+            <option value="Hair Colouring">Hair Colouring</option>
+            <option value="Facial">Facial</option>
+            <option value="Treatment">Treatment</option>
+            <option value="Nails">Nails</option>
+            <option value="Makeup">Makeup</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="price">Price (LKR) *</label>
+          <input
+            id="price"
+            name="price"
+            type="number"
+            [(ngModel)]="service.price"
+            min="0.01"
+            step="0.01"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="duration">Duration (minutes) *</label>
+          <input
+            id="duration"
+            name="durationMinutes"
+            type="number"
+            [(ngModel)]="service.durationMinutes"
+            min="1"
+            max="1440"
+            step="1"
+            required
+          />
+        </div>
+
+        <div class="form-group full-width">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            [(ngModel)]="service.description"
+            placeholder="Describe the service..."
+            maxlength="500"
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+  <button type="submit" class="btn-primary">
+    {{ editingId !== null ? 'Update Service' : 'Save Service' }}
+  </button>
+
+  <button
+    type="button"
+    class="btn-secondary"
+    (click)="cancelEdit()"
+  >
+    Cancel
+  </button>
+</div>
+    </form>
+  </section>
+<section class="services-list" *ngIf="!showForm">
+    <h2>Available Services</h2>
+
+    <p *ngIf="isLoading">Loading services...</p>
+
+    <div class="empty-state" *ngIf="!isLoading && services.length === 0">
+      <h3>No services found</h3>
+      <p>Add your first salon service using the form above.</p>
+    </div>
+
+    <div class="table-wrapper" *ngIf="!isLoading && services.length > 0">
+      <table>
+        <thead>
+          <tr>
+              <th>Image</th>
+            <th>Service</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        
+<tbody>
+  <tr *ngFor="let item of services">
+    <!-- Category image -->
+    <td>
+      <img
+        class="service-image"
+        [src]="getCategoryImage(item.category)"
+        [alt]="item.category + ' service'"
+        loading="lazy"
+      />
+    </td>
+
+    <!-- Service name and description -->
+    <td>
+      <strong>{{ item.name }}</strong>
+      <small *ngIf="item.description">{{ item.description }}</small>
+    </td>
+
+    <!-- Category -->
+    <td>{{ item.category }}</td>
+
+    <!-- Price -->
+    <td>{{ item.price | currency:'LKR ':'symbol':'1.2-2' }}</td>
+
+    <!-- Duration -->
+    <td>{{ item.durationMinutes }} min</td>
+
+    <!-- Status -->
+    <td>
+      <span class="status" [class.inactive]="!item.isActive">
+        {{ item.isActive ? 'Active' : 'Inactive' }}
+      </span>
+    </td>
+
+    <!-- Actions -->
+    <td class="actions">
+      <button
+        type="button"
+        class="btn-edit"
+        (click)="editService(item)"
+      >
+        Edit
+      </button>
+
+      <button
+        type="button"
+        class="btn-delete"
+        (click)="deleteService(item.id!)"
+      >
+        Delete
+      </button>
+    </td>
+  </tr>
+</tbody>
+
+      </table>
+    </div>
+  </section>
+</div>

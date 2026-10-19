@@ -1,0 +1,26 @@
+<div class="cart-item" *ngFor="let item of cart">
+          <div class="cart-item-info">
+            <strong>{{ item.service?.name }}</strong>
+            <span>
+              {{ item.service?.price | currency:'LKR ':'symbol':'1.2-2' }}
+              each
+            </span>
+          </div>
+
+          <div class="quantity-controls">
+            <button type="button"
+              (click)="changeQuantity(item, -1)">−</button>
+            <span>{{ item.quantity }}</span>
+            <button type="button"
+              (click)="changeQuantity(item, 1)">+</button>
+          </div>
+
+          <strong class="line-total">
+            {{ (item.service?.price || 0) * item.quantity
+              | currency:'LKR ':'symbol':'1.2-2' }}
+          </strong>
+
+          <button type="button" class="remove-button"
+            aria-label="Remove item"
+            (click)="removeItem(item)">×</button>
+        </div>

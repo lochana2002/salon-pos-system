@@ -1,0 +1,231 @@
+
+<div class="appointments-page">
+
+  <!-- Page header -->
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">SALON MANAGEMENT</p>
+      <h1>Appointment Directory</h1>
+      <p>Manage customer bookings and appointment statuses.</p>
+    </div>
+
+    <div class="header-actions">
+      <span class="count">{{ appointments.length }} bookings</span>
+
+      <button
+        *ngIf="!showForm"
+        type="button"
+        class="primary-button"
+        (click)="startAddAppointment()">
+        + Add Appointment
+      </button>
+    </div>
+  </header>
+
+  <!-- Success and error messages -->
+  <div class="alert success" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <div class="alert error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Add appointment form -->
+  <section class="booking-card" *ngIf="showForm">
+    <div class="section-heading">
+      <div>
+        <h2>Book a New Appointment</h2>
+        <p>Enter the booking details below.</p>
+      </div>
+    </div>
+
+    <form (ngSubmit)="bookAppointment()" #bookingForm="ngForm">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="customer">Customer *</label>
+          <select
+            id="customer"
+            name="customerId"
+            [(ngModel)]="booking.customerId"
+            required>
+            <option [ngValue]="0">Select customer</option>
+            <option
+              *ngFor="let customer of customers"
+              [ngValue]="customer.id">
+              {{ customer.fullName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="employee">Employee *</label>
+          <select
+            id="employee"
+            name="employeeId"
+            [(ngModel)]="booking.employeeId"
+            required>
+            <option [ngValue]="0">Select employee</option>
+            <option
+              *ngFor="let employee of employees"
+              [ngValue]="employee.id">
+              {{ employee.fullName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="service">Salon Service *</label>
+          <select
+            id="service"
+            name="salonServiceId"
+            [(ngModel)]="booking.salonServiceId"
+            required>
+            <option [ngValue]="0">Select service</option>
+            <option
+              *ngFor="let service of services"
+              [ngValue]="service.id">
+              {{ service.name }} -
+              {{ service.price | currency:'LKR ':'symbol':'1.2-2' }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="startTime">Appointment Date &amp; Time *</label>
+          <input
+            id="startTime"
+            name="startTime"
+            type="datetime-local"
+            [(ngModel)]="booking.startTime"
+            [min]="''"
+            required />
+        </div>
+
+        <div class="form-group full-width">
+          <label for="notes">Notes</label>
+          <textarea
+            id="notes"
+            name="notes"
+            [(ngModel)]="booking.notes"
+            placeholder="Any special requests..."
+            maxlength="500"
+            rows="3"></textarea>
+        </div>
+
+      </div>
+
+      <div class="service-preview" *ngIf="selectedService">
+        <span>
+          Service:
+          <strong>{{ selectedService.name }}</strong>
+        </span>
+
+        <span>
+          Duration:
+          <strong>{{ selectedService.durationMinutes }} minutes</strong>
+        </span>
+
+        <span>
+          Price:
+          <strong>
+            {{ selectedService.price | currency:'LKR ':'symbol':'1.2-2' }}
+          </strong>
+        </span>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="isSaving || !bookingForm.valid">
+          {{ isSaving ? 'Booking...' : 'Book Appointment' }}
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="isSaving"
+          (click)="cancelForm()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Appointment directory -->
+  <section class="appointments-list" *ngIf="!showForm">
+
+    <div class="list-header">
+      <div>
+        <h2>All Appointments</h2>
+        <p>View bookings and manage their status.</p>
+      </div>
+
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="loadAppointments()"
+        [disabled]="isLoading">
+        {{ isLoading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+
+    <p *ngIf="isLoading">Loading appointments...</p>
+
+    <div class="table-wrapper" *ngIf="!isLoading">
+      <table>
+        <thead>
+          <tr>
+            <th>Date &amp; Time</th>
+            <th>Customer</th>
+            <th>Service</th>
+            <th>Employee</th>
+            <th>Status</th>
+            <th>Manage Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let item of appointments">
+            <td>{{ item.startTime | date:'medium' }}</td>
+            <td>{{ item.customerName }}</td>
+            <td>{{ item.serviceName }}</td>
+            <td>{{ item.employeeName }}</td>
+
+            <td>
+              <span
+                class="status"
+                [class.cancelled]="item.status === 'Cancelled'"
+                [class.completed]="item.status === 'Completed'"
+                [class.confirmed]="item.status === 'Confirmed'">
+                {{ item.status }}
+              </span>
+            </td>
+
+            <td>
+              <select
+                #statusSelect
+                [value]="item.status"
+                (change)="changeStatus(item, statusSelect.value)">
+                <option value="Scheduled">Scheduled</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr *ngIf="appointments.length === 0">
+            <td colspan="6" class="empty-state">
+              No appointments yet. Click "+ Add Appointment" to create one.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+</div>

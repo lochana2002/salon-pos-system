@@ -1,18 +1,34 @@
-<p>employees works!</p>
 
 <div class="employee-page">
+
+  <!-- Page Header -->
   <header class="page-header">
     <div>
       <p class="eyebrow">SALON MANAGEMENT</p>
-      <h1>Employee Management</h1>
-      <p class="subtitle">Manage your salon team and employee details.</p>
+      <h1>Employee Directory</h1>
+      <p class="subtitle">
+        Manage your salon team and employee details.
+      </p>
     </div>
-    <div class="employee-count">
-      <span>Total Employees</span>
-      <strong>{{ employees.length }}</strong>
+
+    <div class="header-actions">
+      <div class="employee-count">
+        <span>Total Employees</span>
+        <strong>{{ employees.length }}</strong>
+      </div>
+
+      <button
+        *ngIf="!showForm"
+        type="button"
+        class="primary-button"
+        (click)="startAddEmployee()"
+      >
+        + Add Employee
+      </button>
     </div>
   </header>
 
+  <!-- Messages -->
   <div class="message error" *ngIf="errorMessage">
     {{ errorMessage }}
   </div>
@@ -21,11 +37,25 @@
     {{ successMessage }}
   </div>
 
-  <section class="panel">
-    <h2>{{ editingEmployeeId !== null ? 'Edit Employee' : 'Add New Employee' }}</h2>
+  <!-- Add / Edit Employee Form -->
+  <section class="panel" *ngIf="showForm">
+
+    <div class="table-header">
+      <div>
+        <h2>
+          {{ editingEmployeeId !== null
+            ? 'Edit Employee'
+            : 'Add New Employee' }}
+        </h2>
+        <p class="subtitle">
+          Enter the employee's information below.
+        </p>
+      </div>
+    </div>
 
     <form (ngSubmit)="saveEmployee()" #employeeForm="ngForm">
       <div class="form-grid">
+
         <div class="field">
           <label for="fullName">Full Name *</label>
           <input
@@ -106,6 +136,7 @@
             <option [ngValue]="false">Inactive</option>
           </select>
         </div>
+
       </div>
 
       <div class="form-actions">
@@ -114,26 +145,38 @@
           class="primary-button"
           [disabled]="employeeForm.invalid || saving"
         >
-          {{ saving ? 'Saving...' : (editingEmployeeId !== null ? 'Update Employee' : 'Add Employee') }}
+          {{
+            saving
+              ? 'Saving...'
+              : (editingEmployeeId !== null
+                  ? 'Update Employee'
+                  : 'Save Employee')
+          }}
         </button>
 
         <button
           type="button"
           class="secondary-button"
-          (click)="clearForm()"
+          (click)="cancelForm()"
+          [disabled]="saving"
         >
-          Clear
+          Cancel
         </button>
       </div>
     </form>
   </section>
 
-  <section class="panel">
+  <!-- Employee Directory -->
+  <section class="panel" *ngIf="!showForm">
+
     <div class="table-header">
       <div>
-        <h2>Employee Directory</h2>
-        <p class="subtitle">Your salon team members</p>
+        <h2>All Employees</h2>
+        <p class="subtitle">
+          Your salon team members
+        </p>
       </div>
+
       <button
         type="button"
         class="secondary-button"
@@ -159,23 +202,32 @@
 
         <tbody>
           <tr *ngIf="loading">
-            <td colspan="6" class="empty-state">Loading employees...</td>
+            <td colspan="6" class="empty-state">
+              Loading employees...
+            </td>
           </tr>
 
           <tr *ngIf="!loading && employees.length === 0">
             <td colspan="6" class="empty-state">
-              No employees found. Add your first employee above.
+              No employees found. Click Add Employee to get started.
             </td>
           </tr>
 
           <tr *ngFor="let employee of employees">
             <td>
               <strong>{{ employee.fullName }}</strong>
-              <small *ngIf="employee.email">{{ employee.email }}</small>
+              <small *ngIf="employee.email">
+                {{ employee.email }}
+              </small>
             </td>
+
             <td>{{ employee.phone }}</td>
             <td>{{ employee.jobTitle }}</td>
-            <td>{{ employee.salary | currency:'LKR ':'symbol':'1.2-2' }}</td>
+
+            <td>
+              {{ employee.salary | currency:'LKR ':'symbol':'1.2-2' }}
+            </td>
+
             <td>
               <span
                 class="status"
@@ -185,6 +237,7 @@
                 {{ employee.isActive ? 'Active' : 'Inactive' }}
               </span>
             </td>
+
             <td>
               <div class="action-buttons">
                 <button
@@ -194,6 +247,7 @@
                 >
                   Edit
                 </button>
+
                 <button
                   type="button"
                   class="delete-button"
@@ -208,4 +262,5 @@
       </table>
     </div>
   </section>
+
 </div>

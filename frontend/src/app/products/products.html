@@ -1,0 +1,235 @@
+
+<div class="products-page">
+
+  <!-- Page header -->
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">INVENTORY MANAGEMENT</p>
+      <h1>{{ showForm ? 'Add Product' : 'Products' }}</h1>
+      <p>
+        {{ showForm
+          ? 'Register a new salon product.'
+          : 'Manage your salon retail products and stock.' }}
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button
+        *ngIf="!showForm"
+        type="button"
+        class="primary-button"
+        (click)="startAddProduct()">
+        + Add Product
+      </button>
+
+      <button
+        *ngIf="showForm"
+        type="button"
+        class="secondary-button"
+        (click)="cancelForm()">
+        ← Back to Products
+      </button>
+    </div>
+  </header>
+
+  <!-- Success and error messages -->
+  <div class="alert success" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <div class="alert error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Add product form -->
+  <section class="product-section" *ngIf="showForm">
+    <h2>Product Details</h2>
+    <p>Enter the details of the new product below.</p>
+
+    <form #productForm="ngForm" (ngSubmit)="saveProduct()">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="name">Product Name *</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            [(ngModel)]="product.name"
+            required
+            maxlength="100"
+            placeholder="Enter product name">
+        </div>
+
+        <div class="form-group">
+          <label for="category">Category *</label>
+          <select
+            id="category"
+            name="category"
+            [(ngModel)]="product.category"
+            required>
+            <option value="" disabled>Select category</option>
+            <option value="Hair Care">Hair Care</option>
+            <option value="Skin Care">Skin Care</option>
+            <option value="Hair Styling">Hair Styling</option>
+            <option value="Nail Care">Nail Care</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="price">Price (Rs.) *</label>
+          <input
+            id="price"
+            name="price"
+            type="number"
+            [(ngModel)]="product.price"
+            required
+            min="0"
+            step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label for="stock">Stock Quantity *</label>
+          <input
+            id="stock"
+            name="stock"
+            type="number"
+            [(ngModel)]="product.stock"
+            required
+            min="0"
+            step="1">
+        </div>
+
+        <div class="form-group">
+          <label for="icon">Product Icon</label>
+          <select
+            id="icon"
+            name="icon"
+            [(ngModel)]="product.icon">
+            <option value="🧴">🧴 Bottle</option>
+            <option value="✨">✨ Beauty</option>
+            <option value="🌿">🌿 Natural</option>
+            <option value="🫧">🫧 Cleanser</option>
+            <option value="💅">💅 Nail Care</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="productForm.invalid || isSaving">
+          {{ isSaving ? 'Saving...' : 'Save Product' }}
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="isSaving"
+          (click)="cancelForm()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Product directory -->
+  <ng-container *ngIf="!showForm">
+
+    <!-- Summary cards -->
+    <div class="product-stats">
+      <div class="stat-card">
+        <p>Total Products</p>
+        <h2>{{ products.length }}</h2>
+      </div>
+
+      <div class="stat-card">
+        <p>Total Stock Units</p>
+        <h2>{{ getTotalStock() }}</h2>
+      </div>
+
+      <div class="stat-card">
+        <p>Low Stock Products</p>
+        <h2>{{ getLowStockCount() }}</h2>
+      </div>
+    </div>
+
+    <!-- Product list -->
+    <section class="product-section">
+      <div class="list-header">
+        <div>
+          <h2>Product Directory</h2>
+          <p>View and search your salon products.</p>
+        </div>
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="loadProducts()"
+          [disabled]="isLoading">
+          {{ isLoading ? 'Loading...' : 'Refresh' }}
+        </button>
+      </div>
+
+      <div class="search-box">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search by product name or category...">
+      </div>
+
+      <p *ngIf="isLoading">Loading products...</p>
+
+      <div class="table-wrapper" *ngIf="!isLoading">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Stock Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let item of filteredProducts">
+              <td>
+                <span class="product-icon">{{ item.icon }}</span>
+                {{ item.name }}
+              </td>
+
+              <td>{{ item.category }}</td>
+
+              <td>
+                {{ item.price | currency:'LKR ':'symbol':'1.2-2' }}
+              </td>
+
+              <td>{{ item.stock }}</td>
+
+              <td>
+                <span
+                  class="status"
+                  [class.low-stock]="item.stock <= 5"
+                  [class.in-stock]="item.stock > 5">
+                  {{ item.stock <= 5 ? 'Low Stock' : 'In Stock' }}
+                </span>
+              </td>
+            </tr>
+
+            <tr *ngIf="filteredProducts.length === 0">
+              <td colspan="5" class="empty-state">
+                No products found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </ng-container>
+
+</div>

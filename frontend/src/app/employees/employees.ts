@@ -20,10 +20,25 @@ export class Employees implements OnInit {
   saving = false;
   errorMessage = '';
   successMessage = '';
+  showForm = false;
 
   form: Employee = this.emptyForm();
 
   constructor(private employeeService: EmployeeService) {}
+startAddEmployee(): void {
+  this.form = this.emptyForm();
+  this.editingEmployeeId = null;
+  this.errorMessage = '';
+  this.successMessage = '';
+  this.showForm = true;
+}
+
+cancelForm(): void {
+  this.clearForm();
+  this.errorMessage = '';
+  this.successMessage = '';
+  this.showForm = false;
+}
 
   ngOnInit(): void {
     this.loadEmployees();
@@ -103,6 +118,7 @@ const request: Observable<unknown> =
             : 'Employee added successfully!';
 
         this.clearForm();
+        this.showForm = false;
         this.loadEmployees();
         this.saving = false;
       },
@@ -116,20 +132,21 @@ const request: Observable<unknown> =
   }
 
   editEmployee(employee: Employee): void {
-    this.editingEmployeeId = employee.id ?? null;
+  this.editingEmployeeId = employee.id ?? null;
 
-    this.form = {
-      fullName: employee.fullName,
-      phone: employee.phone,
-      email: employee.email ?? '',
-      jobTitle: employee.jobTitle,
-      salary: employee.salary,
-      isActive: employee.isActive ?? true
-    };
+  this.form = {
+    fullName: employee.fullName,
+    phone: employee.phone,
+    email: employee.email ?? '',
+    jobTitle: employee.jobTitle,
+    salary: employee.salary,
+    isActive: employee.isActive ?? true
+  };
 
-    this.successMessage = '';
-    this.errorMessage = '';
-  }
+  this.successMessage = '';
+  this.errorMessage = '';
+  this.showForm = true;
+}
 
   deleteEmployee(employee: Employee): void {
     if (employee.id == null) {
