@@ -7,16 +7,22 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, NavigationEnd, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import {
+  RouterLink, Router,
+  RouterLinkActive,
+  RouterOutlet
+} from '@angular/router';
 import { Subscription } from 'rxjs';
-
 import { CustomerService } from '../services/customer';
 import { AppointmentService, Appointment } from '../services/appointment';
 import {
   SalonServiceApi,
   SalonService as ApiSalonService
 } from '../services/salon-service';
+import {
+  SalesService,
+  TodaySalesSummary
+} from '../services/sales.service';
 
 interface DisplayItem {
   id: number;
@@ -55,14 +61,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private routerSubscription?: Subscription;
   private clockInterval?: ReturnType<typeof setInterval>;
-
+private salesService = inject(SalesService);
   activeTab: 'services' | 'products' = 'services';
   selectedCategory = 'All';
   searchQuery = '';
   customerSearch = '';
 
-  todaysAppointmentsCount = 0;
+todaysAppointmentsCount = 0;
+todaysAppointments: Appointment[] = [];
   isLoadingServices = false;
+
+  todaySalesRevenue = 0;
+todaySalesCount = 0;
+isLoadingSales = false;
+salesError = false;
 
   // Live date and time
   currentDateTime = new Date();
@@ -83,25 +95,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   customers: DisplayCustomer[] = [];
 
   ngOnInit(): void {
-    this.loadAllData();
+  this.loadAllData();
 
-    // Update the clock every second
-    this.clockInterval = setInterval(() => {
-      this.currentDateTime = new Date();
-
-      // Ensure the displayed time updates in Angular
-      this.cdr.detectChanges();
-    }, 1000);
-
-    // Reload data after navigation
-    this.routerSubscription = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => {
-        this.loadSalonServices();
-        this.loadAppointmentsCount();
-        this.loadCustomers();
-      });
-  }
+  // Update the clock every second
+  this.clockInterval = setInterval(() => {
+    this.currentDateTime = new Date();
+    this.cdr.detectChanges();
+  }, 1000);
+}
 
   ngOnDestroy(): void {
     if (this.clockInterval) {
@@ -115,7 +116,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadCustomers();
     this.loadAppointmentsCount();
     this.loadSalonServices();
+     this.loadTodaySales();
   }
+  loadTodaySales(): void {
+  this.isLoadingSales = true;
+  this.salesError = false;
+
+  this.salesService.getTodaySales().subscribe({
+    next: (data: TodaySalesSummary) => {
+      this.todaySalesRevenue = Number(data.totalRevenue) || 0;
+      this.todaySalesCount = Number(data.salesCount) || 0;
+      this.isLoadingSales = false;
+      this.cdr.markForCheck();
+    },
+    error: (error) => {
+      console.error("Failed to load today's sales:", error);
+      this.salesError = true;
+      this.isLoadingSales = false;
+      this.cdr.markForCheck();
+    }
+  });
+}
 
   loadCustomers(): void {
     this.customerService.getCustomers().subscribe({
@@ -136,26 +157,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadAppointmentsCount(): void {
-    this.appointmentService.getAppointments().subscribe({
-      next: (appointments: Appointment[]) => {
-        const todayStr = new Date().toDateString();
+ 
+loadAppointmentsCount(): void {
+  this.appointmentService.getAppointments().subscribe({
+    next: (appointments: Appointment[]) => {
+      const today = new Date();
 
-        this.todaysAppointmentsCount = appointments.filter(a => {
-          if (!a.startTime) {
+      this.todaysAppointments = appointments
+        .filter(appointment => {
+          if (!appointment.startTime) {
             return false;
           }
 
-          return new Date(a.startTime).toDateString() === todayStr;
-        }).length;
+          const appointmentDate = new Date(appointment.startTime);
 
-        this.cdr.markForCheck();
-      },
-      error: err => {
-        console.error('Failed to load appointments count:', err);
-      }
-    });
-  }
+          return (
+            !Number.isNaN(appointmentDate.getTime()) &&
+            appointmentDate.getFullYear() === today.getFullYear() &&
+            appointmentDate.getMonth() === today.getMonth() &&
+            appointmentDate.getDate() === today.getDate()
+          );
+        })
+        .sort(
+          (a, b) =>
+            new Date(a.startTime).getTime() -
+            new Date(b.startTime).getTime()
+        );
+
+      this.todaysAppointmentsCount = this.todaysAppointments.length;
+
+      this.cdr.markForCheck();
+    },
+    error: err => {
+      console.error('Failed to load appointments:', err);
+      this.todaysAppointments = [];
+      this.todaysAppointmentsCount = 0;
+      this.cdr.markForCheck();
+    }
+  });
+}
+
 
   loadSalonServices(): void {
     this.isLoadingServices = true;

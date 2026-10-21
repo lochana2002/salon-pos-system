@@ -1,212 +1,253 @@
 
-<!-- Dashboard Top Bar -->
-<div class="dashboard-topbar">
-  <div class="dashboard-heading">
-    <h2>Glow & Style...</h2>
-    <p>Welcome back! Here's your salon overview.</p>
-  </div>
+<main class="dashboard-page">
 
-  <div class="live-datetime">
-    <div class="datetime-date">
-      <span>📅</span>
-      {{ currentDateTime | date:'EEEE, d MMMM yyyy' }}
+  <!-- Welcome Header -->
+  <header class="dashboard-topbar">
+    <div class="dashboard-heading">
+      <span class="dashboard-eyebrow">SALON MANAGEMENT</span>
+      <h2>Welcome to Glow &amp; Style</h2>
+      <p>Your salon at a glance. Let's make today beautiful.</p>
     </div>
 
-    <div class="datetime-time">
-      {{ currentDateTime | date:'hh:mm:ss a' }}
-    </div>
-  </div>
-</div>
-
-<!-- Keep your existing POS content below -->
-<div class="pos-grid">
-
-<div class="pos-grid">
-  <!-- Center Column: Items catalog & Metrics -->
-  <div class="pos-main">
-
-<div class="pos-header-actions">
-  <div class="toggle-tabs">
-    <button
-      type="button"
-      routerLink="/salon-services"
-      routerLinkActive="active">
-      ✂️ Services
-    </button>
-
-    <button
-      type="button"
-      routerLink="/products"
-      routerLinkActive="active">
-      🛍️ Products
-    </button>
-  </div>
-</div>
-
-    <!-- Category Pills -->
-    <div class="categories-bar">
-      <button 
-        *ngFor="let cat of categories" 
-        [class.active]="selectedCategory === cat"
-        (click)="selectedCategory = cat">
-        {{ cat }}
-      </button>
-    </div>
-
-    <!-- Cards Grid -->
-    <div class="cards-grid">
-      <div class="card" *ngFor="let item of filteredServices" (click)="addToCart(item)">
-        <div class="card-img" [style.background-image]="'url(' + item.image + ')'"></div>
-        <div class="card-body">
-          <h4>{{ item.name }}</h4>
-          <p class="price">LKR {{ item.price | number:'1.2-2' }}</p>
-          <span class="duration">{{ item.duration }}</span>
-        </div>
+    <div class="live-datetime">
+      <div class="datetime-date">
+        <span>📅</span>
+        {{ currentDateTime | date:'EEEE, d MMMM yyyy' }}
       </div>
+      <div class="datetime-time">
+        {{ currentDateTime | date:'hh:mm:ss a' }}
+      </div>
+      <span class="datetime-caption">LOCAL SALON TIME</span>
+    </div>
+  </header>
+
+  <!-- Section Heading -->
+  <section class="dashboard-section">
+    <div class="section-heading">
+      <div>
+        <h3>Overview</h3>
+        <p>Here is what's happening at your salon.</p>
+      </div>
+      <span class="overview-badge">
+        <span class="status-dot"></span>
+        Live overview
+      </span>
     </div>
 
-    
-<!-- Live Dashboard Statistics -->
-<div class="stats-row">
-  <!-- Today's Appointments -->
-  <div class="stat-card">
-    <div class="stat-icon red-light">📅</div>
-    <div class="stat-content">
-      <span class="label">Today's Appointments</span>
-      <p class="val">{{ todaysAppointmentsCount }}</p>
-      <a routerLink="/appointments" class="link">
-        View Schedule →
+    <!-- Statistics -->
+    <div class="stats-row">
+
+      <article class="stat-card appointments-card">
+        <div class="stat-card-top">
+          <div class="stat-icon">📅</div>
+          <span class="stat-label">APPOINTMENTS</span>
+        </div>
+        <div class="stat-content">
+          <p class="val">{{ todaysAppointmentsCount }}</p>
+          <span class="stat-title">Today's Appointments</span>
+          <a routerLink="/appointments" class="stat-link">
+            View schedule <span>↗</span>
+          </a>
+        </div>
+      </article>
+
+      <article class="stat-card customers-card">
+        <div class="stat-card-top">
+          <div class="stat-icon">👥</div>
+          <span class="stat-label">CUSTOMERS</span>
+        </div>
+        <div class="stat-content">
+          <p class="val">{{ customers.length }}</p>
+          <span class="stat-title">Total Customers</span>
+          <a routerLink="/customers" class="stat-link">
+            View customers <span>↗</span>
+          </a>
+        </div>
+      </article>
+
+      <article class="stat-card services-card">
+        <div class="stat-card-top">
+          <div class="stat-icon">✂️</div>
+          <span class="stat-label">SERVICES</span>
+        </div>
+        <div class="stat-content">
+          <p class="val">{{ servicesList.length }}</p>
+          <span class="stat-title">Active Services</span>
+          <a routerLink="/salon-services" class="stat-link">
+            Manage services <span>↗</span>
+          </a>
+        </div>
+      </article>
+
+      <article class="stat-card sales-card">
+  <div class="stat-card-top">
+    <div class="stat-icon">💳</div>
+    <span class="stat-label">REVENUE</span>
+  </div>
+
+  <div class="stat-content">
+    <p class="val">
+      <ng-container *ngIf="isLoadingSales">
+        Loading...
+      </ng-container>
+
+      <ng-container *ngIf="!isLoadingSales && !salesError">
+        LKR {{ todaySalesRevenue | number:'1.2-2' }}
+      </ng-container>
+
+      <ng-container *ngIf="!isLoadingSales && salesError">
+        —
+      </ng-container>
+    </p>
+
+    <span class="stat-title">Today's Sales</span>
+
+    <span class="stat-note" *ngIf="!isLoadingSales && !salesError">
+      {{ todaySalesCount }}
+      {{ todaySalesCount === 1 ? 'sale' : 'sales' }} recorded today
+    </span>
+
+    <span class="stat-note" *ngIf="salesError">
+      Could not load sales
+    </span>
+  </div>
+</article>
+
+    </div>
+  </section>
+  
+<!-- Today's Appointments -->
+<section class="dashboard-section today-appointments-section">
+  <div class="section-heading">
+    <div>
+      <h3>Today's Appointments</h3>
+      <p>View your real bookings scheduled for today.</p>
+    </div>
+
+    <a routerLink="/appointments" class="stat-link">
+      Manage appointments ↗
+    </a>
+  </div>
+
+  <div class="appointments-list">
+
+    <!-- No appointments -->
+    <div
+      class="appointments-empty"
+      *ngIf="todaysAppointments.length === 0"
+    >
+      <div class="empty-icon">📅</div>
+      <h4>No appointments today</h4>
+      <p>Today's bookings will appear here when customers make appointments.</p>
+      <a routerLink="/appointments" class="appointments-button">
+        View appointments
       </a>
     </div>
-  </div>
 
-  <!-- Total Customers -->
-  <div class="stat-card">
-    <div class="stat-icon pink-light">👥</div>
-    <div class="stat-content">
-      <span class="label">Total Customers</span>
-      <p class="val">{{ customers.length }}</p>
-      <a routerLink="/customers" class="link">
-        View Customers →
+    <!-- Real appointments from the API -->
+    <article
+      class="appointment-item"
+      *ngFor="let appointment of todaysAppointments"
+    >
+      <div class="appointment-time">
+        <span class="time-label">TIME</span>
+        <strong>{{ appointment.startTime | date:'hh:mm a' }}</strong>
+      </div>
+
+      <div class="appointment-details">
+        <h4>{{ appointment.customerName || 'Customer' }}</h4>
+
+        <p class="appointment-service">
+          ✂️ {{ appointment.serviceName || 'Salon service' }}
+          <span *ngIf="appointment.servicePrice != null">
+            · LKR {{ appointment.servicePrice | number:'1.2-2' }}
+          </span>
+        </p>
+
+        <p class="appointment-employee">
+          Employee: {{ appointment.employeeName || 'Not specified' }}
+        </p>
+
+        <p class="appointment-notes" *ngIf="appointment.notes">
+          {{ appointment.notes }}
+        </p>
+      </div>
+
+      <div class="appointment-status">
+        <span
+          class="status-badge"
+          [ngClass]="'status-' + (appointment.status || 'pending').toLowerCase()"
+        >
+          {{ appointment.status || 'Pending' }}
+        </span>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+
+  <!-- Quick Actions -->
+  <section class="dashboard-section">
+    <div class="section-heading">
+      <div>
+        <h3>Quick Actions</h3>
+        <p>Get things done with one click.</p>
+      </div>
+    </div>
+
+    <div class="quick-actions-grid">
+
+      <a routerLink="/appointments" class="quick-action">
+        <div class="quick-action-icon appointment-action">📅</div>
+        <div class="quick-action-content">
+          <h4>Appointments</h4>
+          <p>Schedule and manage bookings</p>
+        </div>
+        <span class="action-arrow">↗</span>
       </a>
-    </div>
-  </div>
 
-  <!-- Active Salon Services -->
-  <div class="stat-card">
-    <div class="stat-icon green-light">✂️</div>
-    <div class="stat-content">
-      <span class="label">Active Services</span>
-      <p class="val">{{ servicesList.length }}</p>
-      <a routerLink="/salon-services" class="link">
-        View Services →
+      <a routerLink="/customers" class="quick-action">
+        <div class="quick-action-icon customer-action">👤</div>
+        <div class="quick-action-content">
+          <h4>Customers</h4>
+          <p>Manage your client profiles</p>
+        </div>
+        <span class="action-arrow">↗</span>
       </a>
-    </div>
-  </div>
 
-  <!-- Sales: connect when sales API is available -->
-  <div class="stat-card">
-    <div class="stat-icon red-light">💵</div>
-    <div class="stat-content">
-      <span class="label">Today's Sales</span>
-      <p class="val">Not connected</p>
-      <span class="link">Sales data API required</span>
-    </div>
-  </div>
-</div>
-
-  </div>
-
-  <!-- Right Panel: Cart Order, Customers & Quick Actions -->
-  <div class="pos-sidebar">
-    <!-- Current Order Section -->
-    <div class="panel order-panel">
-      <div class="panel-header">
-        <h3>Current Order</h3>
-        <button class="clear-btn" (click)="clearCart()">🗑️ Clear All</button>
-      </div>
-
-      <div class="cart-items">
-        <div class="cart-item" *ngFor="let item of cart">
-          <img [src]="item.image" [alt]="item.name" />
-          <div class="item-details">
-            <div class="item-title">
-              <span>{{ item.name }}</span>
-              <button class="remove-btn" (click)="removeFromCart(item)">✕</button>
-            </div>
-            <span class="unit-price">LKR {{ item.price | number:'1.2-2' }}</span>
-            <span class="duration">{{ item.duration }}</span>
-            <div class="item-controls">
-              <div class="qty-btn-group">
-                <button (click)="updateQuantity(item, -1)">-</button>
-                <span>{{ item.quantity }}</span>
-                <button (click)="updateQuantity(item, 1)">+</button>
-              </div>
-              <span class="item-total">LKR {{ (item.price * item.quantity) | number:'1.2-2' }}</span>
-            </div>
-          </div>
+      <a routerLink="/salon-services" class="quick-action">
+        <div class="quick-action-icon service-action">✂️</div>
+        <div class="quick-action-content">
+          <h4>Salon Services</h4>
+          <p>Update treatments and pricing</p>
         </div>
-      </div>
+        <span class="action-arrow">↗</span>
+      </a>
 
-      <div class="order-summary">
-        <div class="summary-line">
-          <span>Subtotal</span>
-          <span>LKR {{ subtotal | number:'1.2-2' }}</span>
+      <a routerLink="/pos" class="quick-action">
+        <div class="quick-action-icon pos-action">🛍️</div>
+        <div class="quick-action-content">
+          <h4>Point of Sale</h4>
+          <p>Process orders and payments</p>
         </div>
-        <div class="summary-line">
-          <span>Discount</span>
-          <span>LKR 0.00</span>
-        </div>
-        <div class="summary-line total-line">
-          <span>Total</span>
-          <span class="total-price">LKR {{ subtotal | number:'1.2-2' }}</span>
-        </div>
+        <span class="action-arrow">↗</span>
+      </a>
 
-        <button class="checkout-btn">💳 Process Payment</button>
-      </div>
     </div>
+  </section>
 
-    <!-- Customer Section -->
-    <div class="panel customer-panel">
-      <div class="panel-header">
-        <h3>Customer</h3>
-        <button class="add-customer-btn" routerLink="/customers">+ New Customer</button>
-      </div>
-
-      <div class="customer-search">
-        <span class="icon">🔍</span>
-        <input type="text" [(ngModel)]="customerSearch" placeholder="Search customer..." />
-      </div>
-
-      <div class="customer-list">
-        <div class="customer-item" *ngFor="let customer of filteredCustomers">
-          <div class="avatar-circle">{{ customer.initials }}</div>
-          <div class="info">
-            <span class="name">{{ customer.name }}</span>
-            <span class="phone">{{ customer.phone }}</span>
-          </div>
-        </div>
-      </div>
+  <!-- Sales Integration Notice -->
+  <section class="dashboard-notice">
+    <div class="notice-icon">✦</div>
+    <div class="notice-content">
+      <h4>Make your dashboard even more powerful</h4>
+      <p>
+        Connect your sales API to display daily revenue and track
+        your salon's financial performance here.
+      </p>
     </div>
+    <span class="notice-status">Coming next</span>
+  </section>
 
-    <!-- Quick Actions Card -->
-    <div class="panel quick-actions-panel">
-      <h3>Quick Actions</h3>
-      <div class="actions-grid">
-        <button class="action-btn pink" routerLink="/appointments">📅 New Appointment</button>
-        <button class="action-btn purple" routerLink="/customers">👤 Add Customer</button>
-        <button class="action-btn beige" routerLink="/salon-services">📦 Add Product</button>
-        <button class="action-btn light-red">📊 View Reports</button>
-      </div>
-    </div>
-
-    <!-- Promotional Banner -->
-    <div class="promo-card">
-      <div class="promo-text">
-        <h3>Beauty Care Confidence</h3>
-        <p>Your Beauty, Our Priority</p>
-      </div>
-      <img src="https://swatisalunkhe.com/beauty-care/" alt="Promo" />
-    </div>
-  </div>
-</div>
+</main>

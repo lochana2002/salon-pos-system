@@ -1,6 +1,11 @@
 
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import {
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet
+} from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -9,4 +14,10 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {}
+export class App {
+  private router = inject(Router);
+
+  get isLoginPage(): boolean {
+    return this.router.url.split('?')[0] === '/login';
+  }
+}
