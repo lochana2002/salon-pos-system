@@ -113,55 +113,74 @@ cancelForm(): void {
   }
 
   bookAppointment(): void {
-    this.message = '';
-    this.errorMessage = '';
+  this.message = '';
+  this.errorMessage = '';
 
-    if (
-      !this.booking.customerId ||
-      !this.booking.employeeId ||
-      !this.booking.salonServiceId ||
-      !this.booking.startTime
-    ) {
-      this.errorMessage =
-        'Please select a customer, employee, service, date and time.';
-      return;
-    }
-
-    const start = new Date(this.booking.startTime);
-
-    if (start <= new Date()) {
-      this.errorMessage = 'Please select a future appointment time.';
-      return;
-    }
-
-    const payload: Appointment = {
-      customerId: Number(this.booking.customerId),
-      employeeId: Number(this.booking.employeeId),
-      salonServiceId: Number(this.booking.salonServiceId),
-      startTime: start.toISOString(),
-      notes: this.booking.notes?.trim() || ''
-    };
-
-    this.isSaving = true;
-
-    this.appointmentApi.addAppointment(payload).subscribe({
-      next: () => {
-  this.message = 'Appointment booked successfully!';
-  this.booking = this.emptyBooking();
-  this.isSaving = false;
-  this.showForm = false;
-  this.loadAppointments();
-},
-      error: error => {
-        console.error(error);
-        this.errorMessage =
-          error.status === 409
-            ? (error.error?.message || 'Employee already has a booking at this time.')
-            : (error.error?.message || 'Could not book appointment.');
-        this.isSaving = false;
-      }
-    });
+  if (
+    !this.booking.customerId ||
+    !this.booking.employeeId ||
+    !this.booking.salonServiceId ||
+    !this.booking.startTime
+  ) {
+    this.errorMessage =
+      'Please select a customer, employee, service, date and time.';
+    return;
   }
+
+  const start = new Date(this.booking.startTime);
+
+  if (start <= new Date()) {
+    this.errorMessage = 'Please select a future appointment time.';
+    return;
+  }
+
+  const payload: Appointment = {
+    customerId: Number(this.booking.customerId),
+    employeeId: Number(this.booking.employeeId),
+    salonServiceId: Number(this.booking.salonServiceId),
+    startTime: start.toISOString(),
+    notes: this.booking.notes?.trim() || ''
+  };
+
+  this.isSaving = true;
+
+  this.appointmentApi.addAppointment(payload).subscribe({
+    next: () => {
+      this.booking = this.emptyBooking();
+      this.message = 'Appointment booked successfully!';
+
+      // Load the updated appointments list
+      this.appointmentApi.getAppointments().subscribe({
+        next: data => {
+          this.appointments = data;
+          this.isSaving = false;
+
+          // Return to All Appointments
+          this.showForm = false;
+        },
+        error: error => {
+          console.error(error);
+          this.errorMessage =
+            'Appointment booked, but unable to refresh the appointments list.';
+          this.isSaving = false;
+          this.showForm = false;
+        }
+      });
+    },
+    error: error => {
+      console.error(error);
+
+      this.errorMessage =
+        error.status === 409
+          ? (error.error?.message ||
+             'Employee already has a booking at this time.')
+          : (error.error?.message ||
+             'Could not book appointment.');
+
+      this.isSaving = false;
+    }
+  });
+}
 
   changeStatus(appointment: Appointment, status: string): void {
     if (!appointment.id) return;
