@@ -1,26 +1,524 @@
-<div class="cart-item" *ngFor="let item of cart">
-          <div class="cart-item-info">
-            <strong>{{ item.service?.name }}</strong>
-            <span>
-              {{ item.service?.price | currency:'LKR ':'symbol':'1.2-2' }}
-              each
-            </span>
+
+<div class="pos-page">
+
+  <!-- ==================== POS PAGE ==================== -->
+  <!-- Hide all POS content when checkout is open -->
+  <div *ngIf="!showCheckout && !showReceipt">
+
+    <!-- POS HEADER -->
+    <header class="pos-header">
+      <div>
+        <p class="eyebrow">SALON MANAGEMENT</p>
+        <h1>Point of Sale</h1>
+        <p class="subtitle">
+          Create a customer order and prepare checkout.
+        </p>
+      </div>
+
+      <div class="order-badge">
+        <span class="order-badge-icon">🛍️</span>
+        <span>{{ totalItems }} item(s)</span>
+      </div>
+    </header>
+
+    <!-- POS LAYOUT -->
+    <div class="pos-layout">
+
+      <!-- ==================== CATALOG ==================== -->
+      <section class="catalog-panel">
+
+        <div class="catalog-heading">
+          <div>
+            <h2>Choose items</h2>
+            <p>Tap an item to add it to the order.</p>
           </div>
-
-          <div class="quantity-controls">
-            <button type="button"
-              (click)="changeQuantity(item, -1)">−</button>
-            <span>{{ item.quantity }}</span>
-            <button type="button"
-              (click)="changeQuantity(item, 1)">+</button>
-          </div>
-
-          <strong class="line-total">
-            {{ (item.service?.price || 0) * item.quantity
-              | currency:'LKR ':'symbol':'1.2-2' }}
-          </strong>
-
-          <button type="button" class="remove-button"
-            aria-label="Remove item"
-            (click)="removeItem(item)">×</button>
         </div>
+
+        <!-- Catalog tabs -->
+        <div class="catalog-tabs">
+          <button
+            type="button"
+            [class.active]="activeTab === 'service'"
+            (click)="changeTab('service')">
+            ✨ Salon Services
+          </button>
+
+          <button
+            type="button"
+            [class.active]="activeTab === 'product'"
+            (click)="changeTab('product')">
+            🧴 Products
+          </button>
+        </div>
+
+        <!-- Search and category filter -->
+        <div class="catalog-filters">
+          <input
+            type="text"
+            [(ngModel)]="searchText"
+            placeholder="Search by name or category..."
+            aria-label="Search items">
+
+          <select
+            [(ngModel)]="selectedCategory"
+            aria-label="Filter by category">
+
+            <option
+              *ngFor="let category of categories"
+              [value]="category">
+              {{ category }}
+            </option>
+
+          </select>
+        </div>
+
+        <!-- Loading services -->
+        <div
+          *ngIf="loading && activeTab === 'service'"
+          class="state-message">
+          Loading salon services...
+        </div>
+
+        <!-- Loading products -->
+        <div
+          *ngIf="activeTab === 'product' &&
+                 products.length === 0 &&
+                 !errorMessage"
+          class="state-message">
+          Loading products...
+        </div>
+
+        <!-- Error message -->
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Empty catalog -->
+        <div
+          *ngIf="
+            !loading &&
+            !(activeTab === 'product' &&
+              products.length === 0 &&
+              !errorMessage) &&
+            filteredItems.length === 0
+          "
+          class="state-message">
+
+          No {{ activeTab === 'service' ? 'services' : 'products' }}
+          found.
+        </div>
+
+        <!-- Catalog cards -->
+        <div class="item-grid">
+
+          <button
+            type="button"
+            class="item-card"
+            *ngFor="let item of filteredItems"
+            [disabled]="
+              item.type === 'product' &&
+              (item.stock ?? 0) <= 0
+            "
+            (click)="addToCart(item)">
+
+            <div class="item-image">
+              <img
+                [src]="item.imageUrl"
+                [alt]="item.name"
+                loading="lazy"
+                (error)="$any($event.target).style.display = 'none'">
+
+              <span class="item-image-icon">
+                {{ item.icon }}
+              </span>
+            </div>
+
+            <div class="item-content">
+
+              <span class="item-category">
+                {{ item.category }}
+              </span>
+
+              <span class="item-name">
+                {{ item.name }}
+              </span>
+
+              <span
+                *ngIf="item.type === 'service'"
+                class="item-detail">
+                ⏱ {{ item.durationMinutes }} min
+              </span>
+
+              <span
+                *ngIf="item.type === 'product'"
+                class="item-detail"
+                [class.out-of-stock]="(item.stock ?? 0) <= 0">
+                Stock: {{ item.stock }}
+              </span>
+
+              <span class="item-bottom">
+                <strong>
+                  LKR {{ item.price | number:'1.2-2' }}
+                </strong>
+
+                <span class="add-icon">+</span>
+              </span>
+
+            </div>
+          </button>
+
+        </div>
+      </section>
+
+      <!-- ==================== CURRENT ORDER ==================== -->
+      <aside class="order-panel">
+
+        <div class="order-heading">
+          <div>
+            <h2>Current order</h2>
+            <p>{{ totalItems }} item(s) selected</p>
+          </div>
+
+          <button
+            type="button"
+            class="clear-button"
+            (click)="clearCart()"
+            [disabled]="cart.length === 0">
+            Clear
+          </button>
+        </div>
+
+        <!-- Customer selection -->
+        <div class="customer-section">
+          <label for="customer">Customer</label>
+
+          <select
+            id="customer"
+            [(ngModel)]="selectedCustomerId">
+
+            <option value="">Walk-in Customer</option>
+
+            <option
+              *ngFor="let customer of customers"
+              [value]="customer.id">
+              {{ customer.fullName }} — {{ customer.phone }}
+            </option>
+
+          </select>
+
+          <p
+            class="customer-hint"
+            *ngIf="loadingCustomers">
+            Loading customers...
+          </p>
+        </div>
+
+        <!-- Cart items -->
+        <div class="cart-items">
+
+          <div *ngIf="cart.length === 0" class="empty-cart">
+            <span>🛍️</span>
+            <h3>Your order is empty</h3>
+            <p>Select a service or product to get started.</p>
+          </div>
+
+          <div class="cart-item" *ngFor="let item of cart">
+
+            <img
+              class="cart-item-image"
+              [src]="item.imageUrl"
+              [alt]="item.name"
+              loading="lazy">
+
+            <div class="cart-item-info">
+              <strong>{{ item.name }}</strong>
+
+              <span>
+                {{ item.type === 'service' ? 'Service' : 'Product' }}
+              </span>
+
+              <span class="cart-unit-price">
+                LKR {{ item.price | number:'1.2-2' }} each
+              </span>
+            </div>
+
+            <div class="cart-item-actions">
+
+              <div class="quantity-control">
+                <button
+                  type="button"
+                  (click)="changeQuantity(item, -1)"
+                  aria-label="Decrease quantity">
+                  −
+                </button>
+
+                <span>{{ item.quantity }}</span>
+
+                <button
+                  type="button"
+                  (click)="changeQuantity(item, 1)"
+                  aria-label="Increase quantity">
+                  +
+                </button>
+              </div>
+
+              <strong class="line-total">
+                LKR {{ item.price * item.quantity | number:'1.2-2' }}
+              </strong>
+
+              <button
+                type="button"
+                class="remove-button"
+                (click)="removeFromCart(item)">
+                Remove
+              </button>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Cart messages -->
+        <div *ngIf="noticeMessage" class="notice-message">
+          {{ noticeMessage }}
+        </div>
+
+        <!-- Order summary -->
+        <div class="order-summary">
+
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>LKR {{ subtotal | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="summary-row total-row">
+            <strong>Total</strong>
+            <strong>LKR {{ subtotal | number:'1.2-2' }}</strong>
+          </div>
+
+          <button
+            type="button"
+            class="checkout-button"
+            [disabled]="cart.length === 0"
+            (click)="checkout()">
+            Prepare Checkout →
+          </button>
+
+          <p class="checkout-hint">
+            Checkout is not connected to payment or sales storage yet.
+          </p>
+
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- ==================== CHECKOUT PAGE ==================== -->
+  <!-- This section appears instead of the entire POS page -->
+  <section
+  class="checkout-screen"
+  *ngIf="showCheckout && !showReceipt"
+>
+
+    <header class="checkout-header">
+
+      <button
+        type="button"
+        class="back-button"
+        (click)="showCheckout = false">
+        ← Back to POS
+      </button>
+
+      <div>
+        <p class="eyebrow">SALON MANAGEMENT</p>
+        <h2>Complete Checkout</h2>
+        <p>Review the order and select a payment method.</p>
+      </div>
+
+    </header>
+
+    <div class="checkout-layout">
+
+      <!-- Order summary -->
+      <section class="checkout-card">
+        <h3>Order Summary</h3>
+
+        <p class="checkout-customer">
+          Customer:
+          <strong>{{ checkoutCustomerName }}</strong>
+        </p>
+
+        <div class="checkout-item" *ngFor="let item of cart">
+          <div>
+            <strong>{{ item.name }}</strong>
+            <p>
+              {{ item.quantity }} ×
+              LKR {{ item.price | number:'1.2-2' }}
+            </p>
+          </div>
+
+          <strong>
+            LKR {{ item.price * item.quantity | number:'1.2-2' }}
+          </strong>
+        </div>
+
+        <div class="checkout-total">
+          <span>Total payable</span>
+          <strong>LKR {{ subtotal | number:'1.2-2' }}</strong>
+        </div>
+      </section>
+
+      <!-- Payment details -->
+      <section class="checkout-card">
+        <h3>Payment Details</h3>
+
+        <label for="paymentMethod">Payment Method</label>
+
+        <select
+          id="paymentMethod"
+          [(ngModel)]="paymentMethod">
+
+          <option value="Cash">Cash</option>
+          <option value="Card">Card</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+
+        </select>
+
+        <!-- Cash payment -->
+        <div *ngIf="paymentMethod === 'Cash'" class="cash-field">
+
+          <label for="amountReceived">Cash Received (LKR)</label>
+
+          <input
+            id="amountReceived"
+            type="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="amountReceived"
+            placeholder="Enter amount received">
+
+          <div class="checkout-total">
+            <span>Change</span>
+            <strong>
+              LKR {{ changeDue | number:'1.2-2' }}
+            </strong>
+          </div>
+
+        </div>
+
+        
+<button
+  type="button"
+  class="confirm-payment-button"
+  (click)="confirmCheckout()"
+  [disabled]="submittingSale">
+  {{ submittingSale ? 'Saving Sale...' : 'Confirm Payment' }}
+</button>
+
+<p *ngIf="errorMessage" class="error-message">
+  {{ errorMessage }}
+</p>
+
+
+      </section>
+    </div>
+  </section>
+
+  
+<!-- Sale receipt: visible after a successful API response -->
+<section
+  *ngIf="showReceipt && lastSale as sale"
+  class="receipt-print-area"
+>
+  <div class="receipt-header">
+    <h2>Salon POS</h2>
+    <p>Sales Receipt</p>
+    <p>Thank you for visiting us!</p>
+  </div>
+
+  <hr />
+
+  <p><strong>Receipt No:</strong> {{ sale.saleId }}</p>
+
+  <p>
+    <strong>Date:</strong>
+    {{ sale.saleDate | date:'medium' }}
+  </p>
+
+  <p>
+    <strong>Customer:</strong>
+    {{ lastSaleCustomerName }}
+  </p>
+
+  <p>
+    <strong>Payment:</strong>
+    {{ sale.paymentMethod }}
+  </p>
+
+  <table class="receipt-table">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let item of sale.items">
+        <td>
+          {{ item.itemName }}
+          <small>({{ item.itemType }})</small>
+        </td>
+
+        <td>{{ item.quantity }}</td>
+
+        <td>{{ item.unitPrice | number:'1.2-2' }}</td>
+
+        <td>{{ item.lineTotal | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr />
+
+  <div class="receipt-totals">
+    <p>
+      Subtotal:
+      <strong>{{ sale.subtotal | number:'1.2-2' }}</strong>
+    </p>
+
+    <p>
+      Amount Received:
+      <strong>
+        {{ sale.amountReceived | number:'1.2-2' }}
+      </strong>
+    </p>
+
+    <p>
+      Change Due:
+      <strong>{{ sale.changeDue | number:'1.2-2' }}</strong>
+    </p>
+  </div>
+
+  <div class="receipt-footer">
+    <p>Thank you! Please visit us again.</p>
+  </div>
+
+  <div class="receipt-actions no-print">
+    <button type="button" (click)="printReceipt()">
+      Print Receipt
+    </button>
+
+    <button type="button" (click)="startNewSale()">
+      New Sale
+    </button>
+
+    <button type="button" (click)="goToSalesHistory()">
+      Sales History
+    </button>
+  </div>
+</section>
+
+</div>

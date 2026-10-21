@@ -1,26 +1,57 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 
-interface Item {
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  inject
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+
+import {
+  SalonServiceApi,
+  SalonService
+} from '../services/salon-service';
+
+import {
+  ProductService,
+  Product
+} from '../services/product.service';
+
+import { CustomerService } from '../services/customer';
+
+import {
+  SalesService,
+  PaymentMethod,
+  CreateSaleItemRequest,
+  CreateSaleRequest,
+  SaleResponse
+} from '../services/sales.service';
+
+type ItemType = 'service' | 'product';
+
+interface PosItem {
   id: number;
   name: string;
-  price: number;
-  duration: string;
-  durationMinutes?: number;
   category: string;
-  image: string;
+  price: number;
+  type: ItemType;
+  icon: string;
+  imageUrl: string;
+  stock?: number;
+  durationMinutes?: number;
 }
 
-interface CartItem extends Item {
+interface CartItem extends PosItem {
   quantity: number;
-  service?: Item;
 }
 
-interface Customer {
-  name: string;
+interface PosCustomer {
+  id?: number;
+  fullName: string;
   phone: string;
-  initials: string;
 }
 
 @Component({
@@ -30,115 +61,544 @@ interface Customer {
   templateUrl: './pos.html',
   styleUrl: './pos.css'
 })
-export class PosComponent {
-  activeTab: 'services' | 'products' = 'services';
-  selectedCategory = 'All';
-  searchQuery = '';
+export class PosComponent implements OnInit {
+  private salonServiceApi = inject(SalonServiceApi);
+  private productService = inject(ProductService);
+  private customerService = inject(CustomerService);
+  private salesService = inject(SalesService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
+  // Catalog
+  activeTab: ItemType = 'service';
+
+  services: PosItem[] = [];
+  products: PosItem[] = [];
+  customers: PosCustomer[] = [];
+  cart: CartItem[] = [];
+
   searchText = '';
+  selectedCategory = 'All';
+  selectedCustomerId = '';
   customerSearch = '';
-  customerName = '';
-  paymentMethod = 'Cash';
+
+  loading = false;
+  loadingCustomers = false;
+
   errorMessage = '';
-  isLoading = false;
+  noticeMessage = '';
+
+  // Checkout
+  showCheckout = false;
+  paymentMethod: PaymentMethod = 'Cash';
+  amountReceived: number | null = null;
+  submittingSale = false;
+
+  // Receipt
   showReceipt = false;
-  receiptNumber = '';
-  completedItems: CartItem[] = [];
-  completedTotal = 0;
+  lastSale: SaleResponse | null = null;
+  lastSaleCustomerName = '';
 
-  categories = ['All', 'Hair', 'Hair Colouring', 'Facial', 'Treatment', 'Nails', 'Makeup', 'Other'];
+  ngOnInit(): void {
+    this.loadServices();
+    this.loadProducts();
+    this.loadCustomers();
+  }
 
-  servicesList: Item[] = [
-    { id: 1, name: 'Haircut', price: 1500, duration: '30 min', durationMinutes: 30, category: 'Hair', image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=300' },
-    { id: 2, name: 'Hair Colouring', price: 3500, duration: '90 min', durationMinutes: 90, category: 'Hair Colouring', image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=300' },
-    { id: 3, name: 'Facial', price: 2500, duration: '60 min', durationMinutes: 60, category: 'Facial', image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&q=80&w=300' },
-    { id: 4, name: 'Manicure', price: 1200, duration: '45 min', durationMinutes: 45, category: 'Nails', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=300' },
-    { id: 5, name: 'Pedicure', price: 1500, duration: '60 min', durationMinutes: 60, category: 'Nails', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=300' },
-    { id: 6, name: 'Massage', price: 2000, duration: '60 min', durationMinutes: 60, category: 'Treatment', image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=300' },
-    { id: 7, name: 'Makeup', price: 2500, duration: '60 min', durationMinutes: 60, category: 'Makeup', image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&q=80&w=300' },
-    { id: 8, name: 'Hair Treatment', price: 2000, duration: '45 min', durationMinutes: 45, category: 'Hair', image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=300' },
-  ];
+  // Load salon services
+  loadServices(): void {
+    this.loading = true;
 
-  cart: CartItem[] = [
-    { id: 1, name: 'Haircut', price: 1500, duration: '30 min', durationMinutes: 30, category: 'Hair', image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=300', quantity: 1, service: { id: 1, name: 'Haircut', price: 1500, duration: '30 min', category: 'Hair', image: '' } },
-    { id: 2, name: 'Hair Colouring', price: 3500, duration: '90 min', durationMinutes: 90, category: 'Hair Colouring', image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=300', quantity: 1, service: { id: 2, name: 'Hair Colouring', price: 3500, duration: '90 min', category: 'Hair Colouring', image: '' } },
-    { id: 4, name: 'Manicure', price: 1200, duration: '45 min', durationMinutes: 45, category: 'Nails', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=300', quantity: 1, service: { id: 4, name: 'Manicure', price: 1200, duration: '45 min', category: 'Nails', image: '' } }
-  ];
+    this.salonServiceApi.getServices().subscribe({
+      next: (data: SalonService[]) => {
+        this.services = data
+          .filter(service => service.isActive !== false)
+          .map(service => ({
+            id: service.id!,
+            name: service.name,
+            category: service.category || 'Other',
+            price: Number(service.price),
+            type: 'service' as ItemType,
+            icon: this.getServiceIcon(service.category),
+            imageUrl: this.getServiceImage(
+              service.category,
+              service.name
+            ),
+            durationMinutes: service.durationMinutes
+          }));
 
-  customers: Customer[] = [
-    { name: 'Sarah Collins', phone: '077 123 4567', initials: 'SC' },
-    { name: 'Kavindu Lakshan', phone: '077 987 6543', initials: 'KL' },
-    { name: 'Piumi Wathsala', phone: '076 555 4433', initials: 'PW' },
-    { name: 'Dinusha Nirmana', phone: '078 222 1111', initials: 'DN' }
-  ];
+        this.loading = false;
+      },
+      error: error => {
+        console.error('Failed to load services:', error);
 
-  get filteredServices() {
-    const query = this.searchText || this.searchQuery;
-    return this.servicesList.filter(service => {
-      const matchesCategory = this.selectedCategory === 'All' || service.category === this.selectedCategory;
-      const matchesSearch = service.name.toLowerCase().includes(query.toLowerCase());
-      return matchesCategory && matchesSearch;
+        this.errorMessage =
+          'Could not load salon services. Check that the API is running.';
+
+        this.loading = false;
+      }
     });
   }
 
-  get subtotal() {
-    return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  // Load products
+  loadProducts(): void {
+    this.productService.getProducts().subscribe({
+      next: (data: Product[]) => {
+        this.products = data.map(product => ({
+          id: product.id,
+          name: product.name,
+          category: product.category || 'Other',
+          price: Number(product.price),
+          type: 'product' as ItemType,
+          icon: product.icon || '🧴',
+          imageUrl: this.getProductImage(
+            product.category,
+            product.name
+          ),
+          stock: Number(product.stock)
+        }));
+      },
+      error: error => {
+        console.error('Failed to load products:', error);
+
+        this.errorMessage =
+          'Could not load products. Check that the API is running.';
+      }
+    });
   }
 
-  addToCart(service: Item) {
-    const existing = this.cart.find(item => item.id === service.id);
+  // Load customers
+  loadCustomers(): void {
+    this.loadingCustomers = true;
+
+    this.customerService.getCustomers().subscribe({
+      next: (data: any[]) => {
+        this.customers = data.map(customer => ({
+          id: customer.id,
+          fullName: customer.fullName,
+          phone: customer.phone
+        }));
+
+        this.loadingCustomers = false;
+      },
+      error: error => {
+        console.error('Failed to load customers:', error);
+        this.loadingCustomers = false;
+      }
+    });
+  }
+
+  // Service images
+  getServiceImage(category: string, name: string): string {
+    const value = `${category || ''} ${name || ''}`.toLowerCase();
+
+    if (value.includes('hair') || value.includes('cut')) {
+      return 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=500&auto=format&fit=crop';
+    }
+
+    if (value.includes('facial') || value.includes('skin')) {
+      return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=500&auto=format&fit=crop';
+    }
+
+    if (
+      value.includes('nail') ||
+      value.includes('manicure') ||
+      value.includes('pedicure')
+    ) {
+      return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=500&auto=format&fit=crop';
+    }
+
+    if (value.includes('makeup')) {
+      return 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&auto=format&fit=crop';
+    }
+
+    if (
+      value.includes('massage') ||
+      value.includes('treatment') ||
+      value.includes('spa')
+    ) {
+      return 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=500&auto=format&fit=crop';
+    }
+
+    if (value.includes('lash') || value.includes('eyebrow')) {
+      return 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500&auto=format&fit=crop';
+    }
+
+    return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&auto=format&fit=crop';
+  }
+
+  // Product images
+  getProductImage(category: string, name: string): string {
+    const value = `${category || ''} ${name || ''}`.toLowerCase();
+
+    if (value.includes('shampoo')) {
+      return 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=500&auto=format&fit=crop';
+    }
+
+    if (value.includes('conditioner') || value.includes('serum')) {
+      return 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=500&auto=format&fit=crop';
+    }
+
+    if (value.includes('nail') || value.includes('polish')) {
+      return 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=500&auto=format&fit=crop';
+    }
+
+    if (
+      value.includes('makeup') ||
+      value.includes('lipstick') ||
+      value.includes('cosmetic')
+    ) {
+      return 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&auto=format&fit=crop';
+    }
+
+    if (
+      value.includes('cream') ||
+      value.includes('lotion') ||
+      value.includes('moistur')
+    ) {
+      return 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=500&auto=format&fit=crop';
+    }
+
+    return 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=500&auto=format&fit=crop';
+  }
+
+  getServiceIcon(category: string): string {
+    const value = (category || '').toLowerCase();
+
+    if (value.includes('hair')) return '💇';
+    if (value.includes('facial')) return '🧖';
+    if (value.includes('nail')) return '💅';
+    if (value.includes('makeup')) return '💄';
+
+    if (
+      value.includes('massage') ||
+      value.includes('treatment')
+    ) {
+      return '🌿';
+    }
+
+    return '✨';
+  }
+
+  // Current catalog
+  get currentItems(): PosItem[] {
+    return this.activeTab === 'service'
+      ? this.services
+      : this.products;
+  }
+
+  // Available categories
+  get categories(): string[] {
+    return [
+      'All',
+      ...new Set(
+        this.currentItems
+          .map(item => item.category)
+          .filter(category => !!category)
+      )
+    ];
+  }
+
+  // Search and filter catalog
+  get filteredItems(): PosItem[] {
+    const search = this.searchText.trim().toLowerCase();
+
+    return this.currentItems.filter(item => {
+      const matchesSearch =
+        item.name.toLowerCase().includes(search) ||
+        item.category.toLowerCase().includes(search);
+
+      const matchesCategory =
+        this.selectedCategory === 'All' ||
+        item.category === this.selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+  }
+
+  // Cart subtotal
+  get subtotal(): number {
+    return this.cart.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    );
+  }
+
+  // Total quantity in cart
+  get totalItems(): number {
+    return this.cart.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
+  }
+
+  // Selected customer
+  get selectedCustomer(): PosCustomer | undefined {
+    return this.customers.find(
+      customer => String(customer.id) === this.selectedCustomerId
+    );
+  }
+
+  get checkoutCustomerName(): string {
+    if (
+      this.selectedCustomerId === '' ||
+      this.selectedCustomerId == null
+    ) {
+      return 'Walk-in Customer';
+    }
+
+    return this.selectedCustomer?.fullName ?? 'Selected Customer';
+  }
+
+  // Calculate change due
+  get changeDue(): number {
+    if (this.amountReceived == null) {
+      return 0;
+    }
+
+    return Math.max(0, this.amountReceived - this.subtotal);
+  }
+
+  // Switch catalog tab
+  changeTab(tab: ItemType): void {
+    this.activeTab = tab;
+    this.selectedCategory = 'All';
+    this.searchText = '';
+    this.noticeMessage = '';
+  }
+
+  // Add item to cart
+  addToCart(item: PosItem): void {
+    this.noticeMessage = '';
+    this.errorMessage = '';
+
+    const existing = this.cart.find(
+      cartItem =>
+        cartItem.type === item.type &&
+        cartItem.id === item.id
+    );
+
+    if (
+      item.type === 'product' &&
+      (item.stock ?? 0) <= (existing?.quantity ?? 0)
+    ) {
+      this.noticeMessage =
+        `Not enough stock available for ${item.name}.`;
+      return;
+    }
+
     if (existing) {
       existing.quantity++;
     } else {
-      this.cart.push({ 
-        ...service, 
-        quantity: 1,
-        service: service
-      });
+      this.cart.push({ ...item, quantity: 1 });
     }
   }
 
-  updateQuantity(item: CartItem, change: number) {
-    item.quantity += change;
-    if (item.quantity <= 0) {
+  // Change quantity
+  changeQuantity(item: CartItem, change: number): void {
+    const newQuantity = item.quantity + change;
+
+    if (newQuantity <= 0) {
       this.removeFromCart(item);
-    }
-  }
-
-  changeQuantity(item: CartItem, change: number) {
-    this.updateQuantity(item, change);
-  }
-
-  removeItem(item: CartItem) {
-    this.removeFromCart(item);
-  }
-
-  removeFromCart(item: CartItem) {
-    this.cart = this.cart.filter(i => i.id !== item.id);
-  }
-
-  clearCart() {
-    this.cart = [];
-  }
-
-  completePayment() {
-    if (this.cart.length === 0) {
-      this.errorMessage = 'Cart is empty!';
       return;
     }
-    this.errorMessage = '';
-    this.completedItems = [...this.cart];
-    this.completedTotal = this.subtotal;
-    this.receiptNumber = 'REC-' + Math.floor(100000 + Math.random() * 900000);
-    this.showReceipt = true;
+
+    if (
+      item.type === 'product' &&
+      newQuantity > (item.stock ?? 0)
+    ) {
+      this.noticeMessage =
+        `Only ${item.stock ?? 0} unit(s) of ${item.name} are available.`;
+      return;
+    }
+
+    item.quantity = newQuantity;
+    this.noticeMessage = '';
   }
 
-  printReceipt() {
+  // Remove item from cart
+  removeFromCart(item: CartItem): void {
+    this.cart = this.cart.filter(
+      cartItem =>
+        !(cartItem.id === item.id && cartItem.type === item.type)
+    );
+
+    this.noticeMessage = '';
+  }
+
+  // Clear cart
+  clearCart(): void {
+    this.cart = [];
+    this.noticeMessage = '';
+    this.errorMessage = '';
+  }
+
+  // Open checkout
+  checkout(): void {
+    if (this.cart.length === 0) {
+      this.noticeMessage = 'Please add an item before checkout.';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.noticeMessage = '';
+    this.showReceipt = false;
+    this.paymentMethod = 'Cash';
+    this.amountReceived = null;
+    this.showCheckout = true;
+  }
+
+  // Save sale and immediately display receipt
+  confirmCheckout(): void {
+    if (this.submittingSale) {
+      return;
+    }
+
+    if (this.cart.length === 0) {
+      this.errorMessage = 'Your order is empty.';
+      return;
+    }
+
+    this.errorMessage = '';
+
+    const total = this.subtotal;
+
+    if (
+      this.paymentMethod === 'Cash' &&
+      (
+        this.amountReceived == null ||
+        !Number.isFinite(this.amountReceived) ||
+        this.amountReceived < total
+      )
+    ) {
+      this.errorMessage =
+        'Please enter enough cash to cover the total.';
+      return;
+    }
+
+    const items: CreateSaleItemRequest[] = this.cart.map(item => ({
+      itemId: item.id,
+      itemType: item.type,
+      quantity: item.quantity
+    }));
+
+    const customerId =
+      this.selectedCustomerId === ''
+        ? null
+        : Number(this.selectedCustomerId);
+
+    if (
+      customerId !== null &&
+      (!Number.isInteger(customerId) || customerId <= 0)
+    ) {
+      this.errorMessage = 'Please select a valid customer.';
+      return;
+    }
+
+    const customerName =
+      this.selectedCustomer?.fullName ?? 'Walk-in Customer';
+
+    const request: CreateSaleRequest = {
+      customerId,
+      paymentMethod: this.paymentMethod,
+      ...(this.paymentMethod === 'Cash'
+        ? { amountReceived: this.amountReceived! }
+        : {}),
+      items
+    };
+
+    this.submittingSale = true;
+
+    this.salesService.createSale(request)
+      .pipe(
+        finalize(() => {
+          this.submittingSale = false;
+        })
+      )
+      .subscribe({
+        next: (response: SaleResponse) => {
+          console.log('Sale response received:', response);
+
+          // Keep the completed sale for the receipt.
+          this.lastSale = response;
+          this.lastSaleCustomerName = customerName;
+
+          // Close checkout and display the receipt.
+          this.showCheckout = false;
+          this.showReceipt = true;
+
+          // Clear the cart only after the sale is saved.
+          this.cart = [];
+          this.amountReceived = null;
+          this.selectedCustomerId = '';
+          this.customerSearch = '';
+          this.searchText = '';
+          this.selectedCategory = 'All';
+          this.activeTab = 'service';
+
+          this.errorMessage = '';
+          this.noticeMessage =
+            `Sale #${response.saleId} saved successfully.`;
+
+          // Apply the state changes immediately.
+          this.cdr.detectChanges();
+
+          console.log('Receipt state:', {
+            showReceipt: this.showReceipt,
+            showCheckout: this.showCheckout,
+            lastSale: this.lastSale
+          });
+
+          // Refresh product stock after saving the sale.
+          this.loadProducts();
+        },
+
+        error: error => {
+          console.error('Sale request failed:', error);
+
+          this.errorMessage =
+            error.error?.message ??
+            'Could not save the sale. Please check the API and try again.';
+        }
+      });
+  }
+
+  // Print receipt
+  printReceipt(): void {
+    if (!this.lastSale) {
+      return;
+    }
+
     window.print();
   }
 
-  newSale() {
+  // Start a new sale
+  startNewSale(): void {
     this.cart = [];
+
+    this.selectedCustomerId = '';
+    this.customerSearch = '';
+
+    this.paymentMethod = 'Cash';
+    this.amountReceived = null;
+
+    this.searchText = '';
+    this.selectedCategory = 'All';
+    this.activeTab = 'service';
+
+    this.showCheckout = false;
     this.showReceipt = false;
-    this.customerName = '';
+    this.lastSale = null;
+    this.lastSaleCustomerName = '';
+
+    this.errorMessage = '';
+    this.noticeMessage = '';
+
+    this.cdr.detectChanges();
+  }
+
+  // Navigate to sales history
+  goToSalesHistory(): void {
+    this.router.navigate(['/sales-history']);
   }
 }
