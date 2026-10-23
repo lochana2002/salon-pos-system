@@ -5,7 +5,6 @@ using SalonPOS.API.Data;
 using SalonPOS.API.DTOs;
 using SalonPOS.API.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace SalonPOS.API.Controllers
 {

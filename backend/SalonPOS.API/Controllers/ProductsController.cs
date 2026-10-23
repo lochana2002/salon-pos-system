@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SalonPOS.API.Data;
 using SalonPOS.API.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SalonPOS.API.Controllers
 {
+
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
